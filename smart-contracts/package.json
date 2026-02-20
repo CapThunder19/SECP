@@ -1,0 +1,39 @@
+{
+  "name": "smart-contracts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "clean": "hardhat clean",
+    "deploy:arbitrum": "hardhat run scripts/deploy.ts --network arbitrumSepolia",
+    "setup:arbitrum": "hardhat run scripts/setup.ts --network arbitrumSepolia",
+    "fund:arbitrum": "hardhat run scripts/fund.ts --network arbitrumSepolia",
+    "interact:arbitrum": "hardhat run scripts/interact.ts --network arbitrumSepolia",
+    "console:arbitrum": "hardhat console --network arbitrumSepolia",
+    "deploy:local": "hardhat run scripts/deploy.ts --network hardhat",
+    "interact:local": "hardhat run scripts/interact.ts --network hardhat",
+    "node": "hardhat node"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.0.7",
+    "@nomicfoundation/hardhat-ignition-viem": "^3.0.7",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.2",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.19.11",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "hardhat": "^3.1.8",
+    "typescript": "~5.8.0",
+    "viem": "^2.46.1"
+  },
+  "type": "module",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "dotenv": "^17.3.1"
+  }
+}
