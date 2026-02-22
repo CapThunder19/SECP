@@ -37,6 +37,13 @@
   --text-secondary: #777777;
   /* Lighter weight text */
 
+  /* Structural colors */
+  --ink: #000000;
+  --ink-rgb: 0, 0, 0;
+  --surface: #ffffff;
+  --surface-alt: #f8f5f0;
+  --border-strong: #000000;
+
   /* Neobrutalist custom shadows - softer black */
   --shadow-card: 6px 6px 0px 0px rgba(35, 30, 25, 1);
   --shadow-card-hover: 10px 10px 0px 0px rgba(35, 30, 25, 1);
@@ -44,34 +51,46 @@
 }
 
 /* ═══════════════════════════════════════════════
-   DARK THEME (Minimal support, keeping it warm)
-   Note: User requested a conversion to light mode.
+   DARK THEME
 ═══════════════════════════════════════════════ */
 .dark {
-  --background: 0 0% 0%;
-  --foreground: 0 0% 100%;
-  --card: 0 0% 5%;
-  --card-foreground: 0 0% 100%;
-  --popover: 0 0% 5%;
-  --popover-foreground: 0 0% 100%;
-  --primary: 0 0% 100%;
-  --primary-foreground: 0 0% 0%;
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 100%;
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 65%;
-  --accent: 0 0% 15%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 62% 30%;
+  --background: 220 13% 9%;
+  --foreground: 0 0% 95%;
+  --card: 220 13% 13%;
+  --card-foreground: 0 0% 95%;
+  --popover: 220 13% 13%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 24 85% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 13% 18%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 220 13% 18%;
+  --muted-foreground: 0 0% 60%;
+  --accent: 220 13% 18%;
+  --accent-foreground: 0 0% 90%;
+  --destructive: 0 62% 50%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 100%;
-  --input: 0 0% 20%;
-  --ring: 0 0% 100%;
+  --border: 0 0% 85%;
+  --input: 220 13% 22%;
+  --ring: 0 0% 80%;
+
+  /* Dark mode warm palette */
+  --bg-warm: #13151a;
+  --bg-warm-footer: #1e2028;
+  --bg-primary: var(--bg-warm);
+  --text-secondary: #a0a0a0;
+
+  /* Structural colors - inverted for dark */
+  --ink: #ffffff;
+  --ink-rgb: 255, 255, 255;
+  --surface: #1c1e26;
+  --surface-alt: #22242e;
+  --border-strong: #ffffff;
 
   /* White shadows for dark mode neobrutalism */
-  --shadow-card: 6px 6px 0px 0px rgba(255, 255, 255, 1);
-  --shadow-card-hover: 10px 10px 0px 0px rgba(255, 255, 255, 1);
-  --shadow-btn: 4px 4px 0px 0px rgba(255, 255, 255, 1);
+  --shadow-card: 6px 6px 0px 0px rgba(255, 255, 255, 0.15);
+  --shadow-card-hover: 10px 10px 0px 0px rgba(255, 255, 255, 0.2);
+  --shadow-btn: 4px 4px 0px 0px rgba(255, 255, 255, 0.15);
 }
 
 /* ═══════════════════════════════════════════════
@@ -86,7 +105,7 @@
 
   body {
     background-color: var(--bg-warm);
-    color: var(--foreground);
+    color: hsl(var(--foreground));
     font-family: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -115,13 +134,14 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #000;
+    background: var(--ink);
     border-radius: 6px;
+    opacity: 0.4;
   }
 
   /* Focus rings */
   *:focus-visible {
-    outline: 2px solid #000;
+    outline: 2px solid var(--ink);
     outline-offset: 2px;
   }
 }
@@ -131,7 +151,7 @@
 ═══════════════════════════════════════════════ */
 .glass-card {
   background: hsl(var(--card));
-  border: 2px solid hsl(var(--border));
+  border: 2px solid var(--border-strong);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -145,7 +165,10 @@
 }
 
 .neo-btn {
-  @apply inline-flex items-center justify-center rounded-xl border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-6 py-3 text-sm font-black uppercase tracking-tight transition-all;
+  @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-black uppercase tracking-tight transition-all;
+  border: 2px solid var(--border-strong);
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
   box-shadow: var(--shadow-btn);
 }
 
@@ -154,18 +177,11 @@
   box-shadow: var(--shadow-card-hover);
 }
 
-/* Dark glass variant */
-.dark .glass-card {
-  background: rgba(28, 28, 50, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
 /* ═══════════════════════════════════════════════
    GRADIENT TEXT
 ═══════════════════════════════════════════════ */
 .gradient-text {
-  color: black;
+  color: hsl(var(--foreground));
   font-weight: 900;
 }
 
@@ -173,10 +189,10 @@
    GLOW BUTTON
 ═══════════════════════════════════════════════ */
 .btn-glow {
-  background: black;
-  color: white;
-  border: 2px solid black;
-  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.3);
+  background: var(--ink);
+  color: var(--surface);
+  border: 2px solid var(--border-strong);
+  box-shadow: 4px 4px 0px 0px rgba(var(--ink-rgb), 0.3);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
@@ -210,9 +226,9 @@
   width: 100%;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  border: 2px solid var(--border-strong);
+  background: hsl(var(--input));
+  color: hsl(var(--foreground));
   font-size: 14px;
   font-weight: 500;
   outline: none;
@@ -220,32 +236,32 @@
 }
 
 .proto-input::placeholder {
-  color: var(--text-muted);
+  color: hsl(var(--muted-foreground));
 }
 
 .proto-input:focus {
-  border-color: var(--accent-hex);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-  background: var(--bg-card);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+  background: hsl(var(--card));
 }
 
 /* Chrome autofill override */
 .proto-input:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0 100px var(--bg-card) inset !important;
-  -webkit-text-fill-color: var(--text-primary) !important;
+  -webkit-box-shadow: 0 0 0 100px hsl(var(--card)) inset !important;
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
 }
 
 /* ═══════════════════════════════════════════════
    PROGRESS BAR
 ═══════════════════════════════════════════════ */
 .progress-track {
-  background: var(--bg-secondary);
+  background: hsl(var(--muted));
   border-radius: 999px;
   overflow: hidden;
 }
 
 .progress-fill {
-  background: black;
+  background: var(--ink);
   transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -316,7 +332,7 @@
 .shimmer {
   position: relative;
   overflow: hidden;
-  background: var(--bg-secondary);
+  background: hsl(var(--muted));
 }
 
 .shimmer::after {
@@ -338,10 +354,10 @@
    NAVBAR
 ═══════════════════════════════════════════════ */
 .navbar {
-  background: var(--navbar-bg);
+  background: var(--bg-warm);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 2px solid var(--border-strong);
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 
@@ -349,9 +365,9 @@
    RADIX OVERRIDES
 ═══════════════════════════════════════════════ */
 [data-radix-tooltip-content] {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-color) !important;
-  color: var(--text-primary) !important;
+  background: hsl(var(--card)) !important;
+  border: 1px solid var(--border-strong) !important;
+  color: hsl(var(--foreground)) !important;
   box-shadow: var(--shadow-card) !important;
   border-radius: 8px !important;
   font-size: 12px !important;

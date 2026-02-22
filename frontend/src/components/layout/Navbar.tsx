@@ -27,10 +27,10 @@ function ThemeToggle() {
     return (
         <motion.button
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors border-2"
             style={{
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-color)',
+                background: 'hsl(var(--card))',
+                borderColor: 'var(--border-strong)',
                 color: 'var(--text-secondary)',
             }}
             whileHover={{ scale: 1.05 }}
@@ -55,17 +55,14 @@ function ThemeToggle() {
 export function Navbar() {
     const pathname = usePathname();
     const [menuOpen, setMenuOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-
-    useEffect(() => {
-        const fn = () => setScrolled(window.scrollY > 8);
-        window.addEventListener('scroll', fn, { passive: true });
-        return () => window.removeEventListener('scroll', fn);
-    }, []);
 
     return (
         <motion.header
-            className="sticky top-0 z-50 bg-[var(--bg-warm)]/80 backdrop-blur-xl border-b-2 border-black"
+            className="sticky top-0 z-50 backdrop-blur-xl border-b-2"
+            style={{
+                background: 'color-mix(in srgb, var(--bg-warm) 85%, transparent)',
+                borderColor: 'var(--border-strong)',
+            }}
             initial={{ y: -60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
@@ -76,13 +73,17 @@ export function Navbar() {
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-3">
                         <motion.div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center bg-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)] border border-black"
+                            className="w-10 h-10 rounded-xl flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(var(--ink-rgb),0.3)] border"
+                            style={{
+                                background: 'var(--ink)',
+                                borderColor: 'var(--border-strong)',
+                            }}
                             whileHover={{ scale: 1.1, rotate: 5 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            <Shield className="w-5 h-5 text-white" />
+                            <Shield className="w-5 h-5" style={{ color: 'var(--surface)' }} />
                         </motion.div>
-                        <span className="font-black text-xl tracking-tighter uppercase" style={{ color: 'var(--text-primary)' }}>
+                        <span className="font-black text-xl tracking-tighter uppercase" style={{ color: 'hsl(var(--foreground))' }}>
                             SECP <span className="text-neutral-400">PROTOCOL</span>
                         </span>
                     </Link>
@@ -96,7 +97,7 @@ export function Navbar() {
                                     <motion.div
                                         className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-colors relative uppercase tracking-widest"
                                         style={{
-                                            color: active ? 'white' : 'var(--text-secondary)',
+                                            color: active ? 'var(--surface)' : 'var(--text-secondary)',
                                         }}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
@@ -106,7 +107,12 @@ export function Navbar() {
                                         {active && (
                                             <motion.div
                                                 layoutId="nav-indicator"
-                                                className="absolute inset-0 rounded-xl -z-10 bg-black border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
+                                                className="absolute inset-0 rounded-xl -z-10 border"
+                                                style={{
+                                                    background: 'var(--ink)',
+                                                    borderColor: 'var(--border-strong)',
+                                                    boxShadow: '2px 2px 0px 0px rgba(var(--ink-rgb),0.2)',
+                                                }}
                                                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                             />
                                         )}
@@ -123,7 +129,12 @@ export function Navbar() {
                             <ConnectButton showBalance={false} chainStatus="icon" accountStatus="avatar" />
                         </div>
                         <motion.button
-                            className="md:hidden w-10 h-10 rounded-xl flex items-center justify-center border-2 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                            className="md:hidden w-10 h-10 rounded-xl flex items-center justify-center border-2 shadow-[2px_2px_0px_0px_rgba(var(--ink-rgb),1)]"
+                            style={{
+                                borderColor: 'var(--border-strong)',
+                                background: 'hsl(var(--card))',
+                                color: 'hsl(var(--foreground))',
+                            }}
                             onClick={() => setMenuOpen(!menuOpen)}
                             whileTap={{ scale: 0.95 }}
                             aria-label="Toggle menu"
@@ -146,7 +157,7 @@ export function Navbar() {
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.25, ease: 'easeInOut' }}
                             className="md:hidden overflow-hidden"
-                            style={{ borderTop: '1px solid var(--border-color)' }}
+                            style={{ borderTop: '1px solid var(--border-strong)' }}
                         >
                             <div className="py-3 pb-4 space-y-1">
                                 {NAV_LINKS.map(({ href, label, icon: Icon }, i) => {
@@ -161,11 +172,11 @@ export function Navbar() {
                                             <Link
                                                 href={href}
                                                 onClick={() => setMenuOpen(false)}
-                                                className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black transition-all uppercase tracking-widest border-2 border-transparent"
+                                                className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black transition-all uppercase tracking-widest border-2"
                                                 style={{
-                                                    color: active ? 'white' : 'var(--text-secondary)',
-                                                    background: active ? 'black' : 'transparent',
-                                                    borderColor: active ? 'black' : 'transparent',
+                                                    color: active ? 'var(--surface)' : 'var(--text-secondary)',
+                                                    background: active ? 'var(--ink)' : 'transparent',
+                                                    borderColor: active ? 'var(--border-strong)' : 'transparent',
                                                 }}
                                             >
                                                 <Icon className="w-4 h-4" />
@@ -174,7 +185,7 @@ export function Navbar() {
                                         </motion.div>
                                     );
                                 })}
-                                <div className="px-3 pt-4 border-t border-black/5 mt-2">
+                                <div className="px-3 pt-4 border-t mt-2" style={{ borderColor: 'var(--border-strong)', opacity: 0.1 }}>
                                     <ConnectButton showBalance={false} chainStatus="none" />
                                 </div>
                             </div>

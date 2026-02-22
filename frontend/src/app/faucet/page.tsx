@@ -59,12 +59,12 @@ function FaucetCard({ token }: { token: typeof TOKENS[0] }) {
             {/* Token header */}
             <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-black border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                        style={{ color: token.color }}>
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-black border-2 shadow-[4px_4px_0px_0px_rgba(var(--ink-rgb),1)]"
+                        style={{ color: token.color, borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>
                         {token.symbol.charAt(1)}
                     </div>
                     <div>
-                        <p className="font-black text-xl uppercase tracking-tighter text-black">{token.symbol}</p>
+                        <p className="font-black text-xl uppercase tracking-tighter" style={{ color: 'hsl(var(--foreground))' }}>{token.symbol}</p>
                         <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">FAUCET TOKEN</p>
                     </div>
                 </div>
@@ -74,7 +74,7 @@ function FaucetCard({ token }: { token: typeof TOKENS[0] }) {
                     {balL ? (
                         <div className="h-4 w-16 rounded animate-pulse bg-neutral-100" />
                     ) : (
-                        <p className="font-black text-2xl tracking-tighter text-black">
+                        <p className="font-black text-2xl tracking-tighter" style={{ color: 'hsl(var(--foreground))' }}>
                             {parseFloat(balance).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </p>
                     )}
@@ -82,9 +82,9 @@ function FaucetCard({ token }: { token: typeof TOKENS[0] }) {
             </div>
 
             {/* Claim info */}
-            <div className="rounded-2xl p-4 flex items-center justify-between border-2 border-black bg-neutral-50 shadow-inner">
+            <div className="rounded-2xl p-4 flex items-center justify-between border-2 shadow-inner" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--muted))' }}>
                 <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Claim Amount</span>
-                <span className="font-black text-black">{token.amount} {token.symbol}</span>
+                <span className="font-black" style={{ color: 'hsl(var(--foreground))' }}>{token.amount} {token.symbol}</span>
             </div>
 
             {/* Success / Error alerts using Badges style */}
@@ -128,14 +128,14 @@ export default function FaucetPage() {
         <div className="max-w-4xl mx-auto space-y-16">
 
             {/* Header */}
-            <div className="border-b-2 border-black pb-12">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-8 bg-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]">
-                    <Droplets className="w-10 h-10 text-white" />
+            <div className="border-b-2 pb-12" style={{ borderColor: 'var(--border-strong)' }}>
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-8 shadow-[8px_8px_0px_0px_rgba(var(--ink-rgb),0.2)]" style={{ background: 'var(--ink)' }}>
+                    <Droplets className="w-10 h-10" style={{ color: 'var(--surface)' }} />
                 </div>
-                <h1 className="text-6xl font-black uppercase tracking-tighter text-black mb-4">Faucet</h1>
+                <h1 className="text-6xl font-black uppercase tracking-tighter mb-4">Faucet</h1>
                 <p className="text-neutral-400 font-medium max-w-2xl text-lg">
                     Mint free testnet tokens to experiment with the SECP Protocol.
-                    Each token has a public <code className="text-black font-black bg-neutral-100 px-2 py-1 rounded-lg">faucet()</code> function.
+                    Each token has a public <code className="font-black rounded-lg px-2 py-1" style={{ color: 'hsl(var(--foreground))', background: 'hsl(var(--muted))' }}>faucet()</code> function.
                 </p>
             </div>
 

@@ -62,7 +62,7 @@ function toPts(data: number[], W: number, H: number): [number, number][] {
 function PriceChart({ sets, crashed }: { sets: { key: string; data: number[]; color: string }[]; crashed: boolean }) {
     const W = 800, H = 200;
     return (
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full bg-[#fcfaf7] rounded-xl border-2 border-black" style={{ height: 200 }}>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-xl border-2" style={{ height: 200, background: 'hsl(var(--card))', borderColor: 'var(--border-strong)' }}>
             {[0.25, 0.5, 0.75].map(r => <line key={r} x1="0" y1={r * H} x2={W} y2={r * H} stroke="rgba(0,0,0,0.05)" strokeWidth="1" />)}
             {crashed && <rect x="0" y="0" width={W} height={H} fill="rgba(239,68,68,0.05)" />}
             {sets.map(({ key, data, color }, i) => {
@@ -70,7 +70,7 @@ function PriceChart({ sets, crashed }: { sets: { key: string; data: number[]; co
                 return (<g key={key}><path d={smooth(pts)} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" /></g>);
             })}
             {sets.map(({ key, data, color }) => { const pts = toPts(data, W, H); const [lx, ly] = pts[pts.length - 1]; return <g key={`d-${key}`}><circle cx={lx} cy={ly} r="6" fill="black" /><circle cx={lx} cy={ly} r="4" fill={color} /></g>; })}
-            {['−40m', '−30m', '−20m', '−10m', 'Now'].map((l, i, a) => <text key={l} x={(i / (a.length - 1)) * W} y={H - 5} textAnchor="middle" fill="black" fontSize="10" fontWeight="900" className="uppercase tracking-widest">{l}</text>)}
+            {['−40m', '−30m', '−20m', '−10m', 'Now'].map((l, i, a) => <text key={l} x={(i / (a.length - 1)) * W} y={H - 5} textAnchor="middle" fill="var(--ink)" fontSize="10" fontWeight="900" className="uppercase tracking-widest">{l}</text>)}
         </svg>
     );
 }
@@ -144,20 +144,23 @@ function ComponentNode({ name, label, status, color, desc, icon: Icon, arrow }: 
     const active = status !== 'idle';
     return (
         <div className="flex items-center gap-4">
-            <div className={`flex-1 rounded-2xl p-4 transition-all duration-500 border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 ${active ? 'bg-white border-black' : 'bg-neutral-50 border-black/10 opacity-50'
-                }`}>
+            <div className={`flex-1 rounded-2xl p-4 transition-all duration-500 border-2 shadow-[4px_4px_0px_0px_rgba(var(--ink-rgb),1)] hover:-translate-y-1 ${active ? '' : 'opacity-50'}`}
+                style={{
+                    background: active ? 'hsl(var(--card))' : 'hsl(var(--muted))',
+                    borderColor: active ? 'var(--border-strong)' : 'hsl(var(--border) / 0.1)',
+                }}>
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        <Icon className="w-5 h-5" style={{ color: active ? color : 'gray' }} />
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center border-2 shadow-[2px_2px_0px_0px_rgba(var(--ink-rgb),1)]" style={{ background: 'hsl(var(--card))', borderColor: 'var(--border-strong)' }}>
+                        <Icon className="w-5 h-5" style={{ color: active ? color : 'var(--text-secondary)' }} />
                     </div>
                     <div>
                         <p className="text-sm font-black uppercase tracking-tighter">{name}</p>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">{label}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>{label}</p>
                     </div>
                 </div>
-                {active && <p className="text-[10px] font-medium mt-3 text-neutral-500 leading-relaxed uppercase tracking-widest border-t border-black/5 pt-3">{desc}</p>}
+                {active && <p className="text-[10px] font-medium mt-3 leading-relaxed uppercase tracking-widest border-t pt-3" style={{ color: 'var(--text-secondary)', borderColor: 'hsl(var(--border) / 0.1)' }}>{desc}</p>}
             </div>
-            {arrow && <ArrowRight className="w-6 h-6 border-2 border-black rounded-full p-1" />}
+            {arrow && <ArrowRight className="w-6 h-6 border-2 rounded-full p-1" style={{ borderColor: 'var(--border-strong)' }} />}
         </div>
     );
 }
@@ -338,12 +341,12 @@ export default function MarketPage() {
         <div className="space-y-12 max-w-6xl mx-auto">
 
             {/* Header */}
-            <div className="border-b-2 border-black pb-8 flex items-center justify-between flex-wrap gap-6">
+            <div className="border-b-2 pb-8 flex items-center justify-between flex-wrap gap-6" style={{ borderColor: 'var(--border-strong)' }}>
                 <div>
                     <h1 className="text-6xl font-black uppercase tracking-tighter flex items-center gap-4">
                         <TrendingDown className="w-12 h-12 text-[#ef4444]" /> Market
                     </h1>
-                    <p className="font-normal mt-1 text-neutral-500">
+                    <p className="font-normal mt-1" style={{ color: 'var(--text-secondary)' }}>
                         Stress-test the SECP Protocol anti-liquidation shields.
                     </p>
                 </div>
@@ -363,8 +366,9 @@ export default function MarketPage() {
                     return (
                         <Card key={sym} className="p-6 transition-all duration-500"
                             style={crashed ? { borderColor: '#ef4444' } : {}}>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">{sym}</p>
-                            <p className={`text-3xl font-black tracking-tighter ${crashed ? 'text-red-500' : 'text-black'}`}>
+                            <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>{sym}</p>
+                            <p className={`text-3xl font-black tracking-tighter ${crashed ? 'text-red-500' : ''}`}
+                                style={crashed ? undefined : { color: 'hsl(var(--foreground))' }}>
                                 ${(crashed ? after : live).toFixed(4)}
                             </p>
                             {crashed && (
@@ -376,11 +380,11 @@ export default function MarketPage() {
                     );
                 })}
 
-                <Card className="p-6" style={{ background: volDisplay > 70 ? '#fef2f2' : 'white', borderColor: volDisplay > 70 ? '#ef4444' : 'black' }}>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">Volatility</p>
-                    <p className="text-3xl font-black text-black tracking-tighter">{volDisplay}%</p>
-                    <div className="h-4 bg-neutral-100 border-2 border-black rounded-full mt-3 overflow-hidden">
-                        <div className="h-full bg-black transition-all duration-1000" style={{ width: `${volDisplay}%` }} />
+                <Card className="p-6" style={{ background: volDisplay > 70 ? 'hsl(var(--destructive) / 0.08)' : 'hsl(var(--card))', borderColor: volDisplay > 70 ? '#ef4444' : 'var(--border-strong)' }}>
+                    <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>Volatility</p>
+                    <p className="text-3xl font-black tracking-tighter" style={{ color: 'hsl(var(--foreground))' }}>{volDisplay}%</p>
+                    <div className="h-4 border-2 rounded-full mt-3 overflow-hidden" style={{ background: 'hsl(var(--muted))', borderColor: 'var(--border-strong)' }}>
+                        <div className="h-full bg-current transition-all duration-1000" style={{ width: `${volDisplay}%`, background: 'var(--ink)' }} />
                     </div>
                 </Card>
             </div>
@@ -409,12 +413,11 @@ export default function MarketPage() {
 
                 {/* Crash Controls (left, 2 cols) */}
                 <div className="lg:col-span-2 space-y-4">
-                    <Card className="p-8 space-y-8 bg-[#fcfaf7]"
-                        style={crashed ? { borderColor: '#ef4444', background: '#fef2f2' } : {}}>
+                    <Card className="p-8 space-y-8" style={{ background: crashed ? '#fef2f2' : 'hsl(var(--card))', borderColor: crashed ? '#ef4444' : 'var(--border-strong)' }}>
 
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center border-2 border-black bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
-                                <Flame className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center border-2 shadow-[4px_4px_0px_0px_rgba(var(--ink-rgb),0.2)]" style={{ background: 'var(--ink)', borderColor: 'var(--border-strong)' }}>
+                                <Flame className="w-6 h-6" style={{ color: 'var(--surface)' }} />
                             </div>
                             <h2 className="text-2xl font-black uppercase tracking-tight">Simulator</h2>
                         </div>
@@ -424,10 +427,14 @@ export default function MarketPage() {
                             <div className="grid grid-cols-2 gap-3">
                                 {CRASH_OPTS.map(p => (
                                     <button key={p} onClick={() => setIntensity(p)} disabled={crashState !== 'idle'}
-                                        className={`p-4 rounded-2xl border-2 transition-all shadow-[4px_4px_0px_0px_rgba(35,30,25,1)] active:shadow-none active:translate-x-1 active:translate-y-1 ${intensity === p ? 'bg-[#ffe8d0] text-black border-black' : 'bg-white text-black border-black hover:bg-[#fcfaf7]'
-                                            }`}>
+                                        className={`p-4 rounded-2xl border-2 transition-all shadow-[4px_4px_0px_0px_rgba(35,30,25,1)] active:shadow-none active:translate-x-1 active:translate-y-1 ${intensity === p ? '' : ''}`}
+                                        style={{
+                                            borderColor: 'var(--border-strong)',
+                                            background: intensity === p ? '#ffe8d0' : 'hsl(var(--card))',
+                                            color: 'hsl(var(--foreground))',
+                                        }}>
                                         <p className="font-extrabold text-xl tracking-tighter">−{p}%</p>
-                                        <p className={`text-[10px] font-extrabold uppercase tracking-widest ${intensity === p ? 'text-black/60' : 'text-neutral-400'}`}>
+                                        <p className={`text-[10px] font-extrabold uppercase tracking-widest`} style={{ color: intensity === p ? 'hsl(var(--foreground) / 0.6)' : 'var(--text-secondary)' }}>
                                             {p <= 20 ? 'MILD' : p <= 40 ? 'MOD.' : p <= 60 ? 'SEVERE' : 'CRITICAL'}
                                         </p>
                                     </button>
@@ -450,7 +457,7 @@ export default function MarketPage() {
                             </div>
                         )}
 
-                        {txStatus && <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 border-2 border-black p-4 rounded-xl bg-white">{txStatus}</p>}
+                        {txStatus && <p className="text-[10px] font-black uppercase tracking-widest border-2 p-4 rounded-xl" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>{txStatus}</p>}
 
                         <div className="space-y-4 pt-4">
                             <Button onClick={handleCrash} disabled={crashState !== 'idle'}
@@ -486,25 +493,25 @@ export default function MarketPage() {
                 <div className="lg:col-span-3">
                     {crashState === 'idle' ? (
                         /* Idle state — explain the system */
-                        <Card className="p-12 h-full flex flex-col justify-center border-2 border-black bg-[#fcfaf7] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-                            <h2 className="text-4xl font-black uppercase tracking-tighter mb-8 bg-[var(--bg-warm-footer)]/40 px-4 py-2 rounded-xl inline-block w-fit">Anti-Liquidation Engine</h2>
+                        <Card className="p-12 h-full flex flex-col justify-center border-2 shadow-[12px_12px_0px_0px_rgba(var(--ink-rgb),1)]" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>
+                            <h2 className="text-4xl font-black uppercase tracking-tighter mb-8 px-4 py-2 rounded-xl inline-block w-fit" style={{ background: 'color-mix(in srgb, var(--bg-warm-footer) 40%, transparent)' }}>Anti-Liquidation Engine</h2>
                             <div className="space-y-8">
                                 {STORY_STEPS.map((s, i) => (
                                     <div key={s.id} className="flex items-start gap-6 group">
-                                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-lg font-black border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:-translate-y-1 transition-all"
-                                            style={{ color: s.color }}>
+                                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-lg font-black border-2 shadow-[4px_4px_0px_0px_rgba(var(--ink-rgb),1)] group-hover:-translate-y-1 transition-all"
+                                            style={{ color: s.color, borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>
                                             {i + 1}
                                         </div>
                                         <div>
                                             <p className="font-black text-lg uppercase tracking-tight">{s.title}</p>
-                                            <p className="text-xs font-normal text-neutral-500 mt-1 leading-relaxed">{s.plain}</p>
+                                            <p className="text-xs font-normal mt-1 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{s.plain}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="mt-12 rounded-2xl p-6 border-2 border-black bg-neutral-50 shadow-inner flex items-start gap-4">
-                                <Shield className="w-6 h-6 text-black flex-shrink-0" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500 leading-relaxed">
+                            <div className="mt-12 rounded-2xl p-6 border-2 shadow-inner flex items-start gap-4" style={{ borderColor: 'hsl(var(--border) / 0.1)', background: 'hsl(var(--muted))' }}>
+                                <Shield className="w-6 h-6 flex-shrink-0" style={{ color: 'hsl(var(--foreground))' }} />
+                                <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                                     💡 Unlike traditional DeFi which immediately liquidates your position, SECP uses its Anti-Liquidation system to give you time to recover — protecting your collateral even during extreme market events.
                                 </p>
                             </div>
@@ -522,18 +529,18 @@ export default function MarketPage() {
                                         style={{
                                             opacity: visible ? 1 : 0,
                                             transform: visible ? 'translateY(0)' : 'translateY(24px)',
-                                            borderColor: visible ? 'black' : 'rgba(0,0,0,0.1)',
-                                            background: active ? '#fcfcf9' : 'white',
-                                            boxShadow: visible ? '8px 8px 0px 0px rgba(0,0,0,1)' : 'none'
+                                            borderColor: visible ? 'var(--border-strong)' : 'hsl(var(--border) / 0.1)',
+                                            background: active ? 'color-mix(in srgb, var(--bg-warm-footer) 30%, hsl(var(--card)))' : 'hsl(var(--card))',
+                                            boxShadow: visible ? '8px 8px 0px 0px rgba(var(--ink-rgb),1)' : 'none'
                                         }}>
                                         <div className="flex items-start gap-6">
                                             {/* Step number / icon */}
-                                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                                                style={{ color: s.color }}>
+                                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 border-2 shadow-[4px_4px_0px_0px_rgba(var(--ink-rgb),1)]"
+                                                style={{ color: s.color, borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>
                                                 {done
                                                     ? <Check className="w-6 h-6 text-green-500" />
                                                     : active
-                                                        ? <div className="spinner border-black border-t-transparent" />
+                                                        ? <div className="spinner" style={{ borderColor: 'var(--ink)', borderTopColor: 'transparent' }} />
                                                         : <s.icon className="w-6 h-6" />
                                                 }
                                             </div>
@@ -546,12 +553,12 @@ export default function MarketPage() {
                                                     {done && <span className="text-[10px] font-black uppercase tracking-widest text-green-500">✓ SECURED</span>}
                                                 </div>
 
-                                                <p className="text-xl font-black uppercase tracking-tighter text-black">{s.title}</p>
-                                                <p className="text-xs font-medium text-neutral-500 mt-2 leading-relaxed uppercase tracking-widest">{s.plain}</p>
+                                                <p className="text-xl font-black uppercase tracking-tighter" style={{ color: 'hsl(var(--foreground))' }}>{s.title}</p>
+                                                <p className="text-xs font-medium mt-2 leading-relaxed uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>{s.plain}</p>
 
                                                 {/* Technical detail */}
                                                 {visible && (
-                                                    <div className="mt-4 rounded-xl px-4 py-3 bg-neutral-50 border-2 border-black/5 font-mono text-[10px] text-neutral-400 break-all">
+                                                    <div className="mt-4 rounded-xl px-4 py-3 border-2 font-mono text-[10px] break-all" style={{ background: 'hsl(var(--muted))', borderColor: 'hsl(var(--border) / 0.1)', color: 'var(--text-secondary)' }}>
                                                         {s.technical}
                                                     </div>
                                                 )}
@@ -559,11 +566,11 @@ export default function MarketPage() {
                                                 {/* Specific metrics for relevant steps */}
                                                 {visible && s.id === 'health' && hasPosition && debtN > 0 && (
                                                     <div className="mt-4 grid grid-cols-2 gap-4">
-                                                        <div className="rounded-xl p-4 border-2 border-black bg-white">
-                                                            <p className="text-[10px] font-black uppercase text-neutral-400">OLD HF</p>
+                                                        <div className="rounded-xl p-4 border-2" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>
+                                                            <p className="text-[10px] font-black uppercase" style={{ color: 'var(--text-secondary)' }}>OLD HF</p>
                                                             <p className="text-xl font-black">{oldHF === Infinity ? '∞' : oldHF.toFixed(2)}</p>
                                                         </div>
-                                                        <div className="rounded-xl p-4 border-2 border-red-500 bg-red-50">
+                                                        <div className="rounded-xl p-4 border-2 border-red-500" style={{ background: 'hsl(var(--destructive) / 0.05)' }}>
                                                             <p className="text-[10px] font-black uppercase text-red-400">NEW HF</p>
                                                             <p className="text-xl font-black text-red-600">{newHF === Infinity ? '∞' : newHF.toFixed(2)}</p>
                                                         </div>
@@ -577,7 +584,7 @@ export default function MarketPage() {
 
                             {/* Final summary */}
                             {crashed && activeStep >= STORY_STEPS.length - 1 && (
-                                <Card className="p-8 border-2 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+                                <Card className="p-8 border-2 shadow-[12px_12px_0px_0px_rgba(var(--ink-rgb),1)]" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>
                                     <p className="text-2xl font-black uppercase tracking-tighter mb-6 flex items-center gap-3">
                                         <Shield className="w-8 h-8" /> Protection Active
                                     </p>
@@ -588,14 +595,14 @@ export default function MarketPage() {
                                             'Automatic Yield Repayment',
                                             'Borrower Score Preserved'
                                         ].map((item, i) => (
-                                            <div key={i} className="flex items-center gap-3 p-4 border-2 border-black rounded-xl bg-neutral-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+                                            <div key={i} className="flex items-center gap-3 p-4 border-2 rounded-xl shadow-[4px_4px_0px_0px_rgba(var(--ink-rgb),0.1)]" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--muted))' }}>
                                                 <Check className="w-4 h-4 text-green-500" />
                                                 <span className="text-[10px] font-black uppercase tracking-widest">{item}</span>
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="mt-8 border-t-2 border-black pt-8">
-                                        <Button className="w-full h-16 font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]" asChild>
+                                    <div className="mt-8 border-t-2 pt-8" style={{ borderColor: 'var(--border-strong)' }}>
+                                        <Button className="w-full h-16 font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(var(--ink-rgb),1)]" asChild>
                                             <Link href="/dashboard">RETURN TO DASHBOARD</Link>
                                         </Button>
                                     </div>

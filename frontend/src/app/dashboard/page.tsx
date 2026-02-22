@@ -27,8 +27,8 @@ function StatCard({ label, value, sub, color, loading, i }: {
     label: string; value: string; sub?: string; color?: string; loading?: boolean; i?: number;
 }) {
     return (
-        <div className="p-8 border-2 border-black rounded-2xl bg-[#fcfaf7] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform group">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-3 text-neutral-400 group-hover:text-black transition-colors">
+        <div className="p-8 border-2 rounded-2xl shadow-[4px_4px_0px_0px_rgba(var(--ink-rgb),1)] hover:-translate-y-1 transition-transform group" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-3 group-hover:opacity-100 transition-colors" style={{ color: 'var(--text-secondary)' }}>
                 {label}
             </p>
             {loading ? <Skeleton className="h-10 w-32 mt-1" /> : (
@@ -37,7 +37,7 @@ function StatCard({ label, value, sub, color, loading, i }: {
                 </p>
             )}
             {sub && !loading && (
-                <p className="text-[10px] mt-2 font-black uppercase tracking-widest text-neutral-400 italic">{sub}</p>
+                <p className="text-[10px] mt-2 font-black uppercase tracking-widest italic" style={{ color: 'var(--text-secondary)' }}>{sub}</p>
             )}
         </div>
     );
@@ -54,16 +54,16 @@ function TokenRow({ name, symbol, address, weight, color, i }: {
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1, duration: 0.3 }}
-            style={{ borderBottom: '1.5px solid #000' }}
+            style={{ borderBottom: '1.5px solid var(--border-strong)' }}
         >
             <div className="flex items-center gap-4">
-                <div className="w-12 h-12 border-2 border-black rounded-xl flex items-center justify-center text-sm font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] group-hover:bg-black group-hover:text-white transition-all"
-                    style={{ background: color }}>
+                <div className="w-12 h-12 border-2 rounded-xl flex items-center justify-center text-sm font-black shadow-[2px_2px_0px_0px_rgba(var(--ink-rgb),1)] transition-all text-white"
+                    style={{ background: color, borderColor: 'var(--border-strong)' }}>
                     {symbol.slice(1, 2)}
                 </div>
                 <div>
                     <p className="text-base font-black uppercase tracking-tight" style={{ color: 'var(--text-primary)' }}>{name}</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Weight: {weight}%</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>Weight: {weight}%</p>
                 </div>
             </div>
             {isLoading
@@ -73,7 +73,7 @@ function TokenRow({ name, symbol, address, weight, color, i }: {
                         <p className="text-lg font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
                             {parseFloat(balance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
-                        <p className="text-[10px] font-black uppercase text-neutral-400">{symbol}</p>
+                        <p className="text-[10px] font-black uppercase" style={{ color: 'var(--text-secondary)' }}>{symbol}</p>
                     </div>
                 )}
         </motion.div>
@@ -104,15 +104,16 @@ export default function DashboardPage() {
                 transition={{ duration: 0.5 }}
             >
                 <motion.div
-                    className="w-24 h-24 border-2 border-black rounded-3xl flex items-center justify-center bg-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]"
+                    className="w-24 h-24 border-2 rounded-3xl flex items-center justify-center shadow-[8px_8px_0px_0px_rgba(var(--ink-rgb),0.2)]"
+                    style={{ borderColor: 'var(--border-strong)', background: 'var(--ink)' }}
                     animate={{ y: [0, -8, 0] }}
                     transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
                 >
-                    <Wallet className="w-10 h-10 text-white" />
+                    <Wallet className="w-10 h-10" style={{ color: 'var(--surface)' }} />
                 </motion.div>
                 <div>
                     <h1 className="text-4xl font-black mb-3 uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>Connect Wallet</h1>
-                    <p className="max-w-md mx-auto font-medium text-neutral-500">
+                    <p className="max-w-md mx-auto font-medium" style={{ color: 'var(--text-secondary)' }}>
                         Connect to Arbitrum Sepolia to view your live position, health factor, and protocol stats.
                     </p>
                 </div>
@@ -136,14 +137,15 @@ export default function DashboardPage() {
 
             {/* Header */}
             <motion.div
-                className="flex items-center justify-between flex-wrap gap-6 border-b-2 border-black pb-8"
+                className="flex items-center justify-between flex-wrap gap-6 border-b-2 pb-8"
+                style={{ borderColor: 'var(--border-strong)' }}
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
             >
                 <div>
                     <h1 className="text-5xl font-black uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
-                    <p className="font-medium mt-1 text-neutral-400">Your live position on Arbitrum Sepolia</p>
+                    <p className="font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>Your live position on Arbitrum Sepolia</p>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap">
                     <Badge variant="conf" className="px-6 py-2">
@@ -177,9 +179,10 @@ export default function DashboardPage() {
                         </span>
                     </div>
                     <Progress value={util}
-                        className="h-4 border-2 border-black bg-neutral-100"
-                        indicatorClassName={util > 80 ? 'bg-red-500' : util > 60 ? 'bg-yellow-500' : 'bg-black'} />
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                        className="h-4 border-2"
+                        style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--muted))' }}
+                        indicatorClassName={util > 80 ? 'bg-red-500' : util > 60 ? 'bg-yellow-500' : 'bg-foreground'} />
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
                         <span>$0</span><span>Max ${maxN.toFixed(2)}</span>
                     </div>
                     {debtN <= 0 && (
@@ -201,9 +204,10 @@ export default function DashboardPage() {
                         </span>
                     </div>
                     <Progress value={score}
-                        className="h-4 border-2 border-black bg-neutral-100"
-                        indicatorClassName={score >= 80 ? 'bg-black' : score >= 60 ? 'bg-yellow-500' : 'bg-red-500'} />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                        className="h-4 border-2"
+                        style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--muted))' }}
+                        indicatorClassName={score >= 80 ? 'bg-foreground' : score >= 60 ? 'bg-yellow-500' : 'bg-red-500'} />
+                    <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
                         {score >= 80 ? 'Reliable borrower — eligible for Flexible mode'
                             : score >= 60 ? 'Moderate — repay on time to improve'
                                 : 'Low score — late repayments or liquidations detected'}
@@ -213,7 +217,7 @@ export default function DashboardPage() {
 
             {/* Token balances */}
             <Card className="p-8">
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-black/5">
+                <div className="flex items-center justify-between mb-8 pb-4 border-b" style={{ borderColor: 'hsl(var(--border) / 0.1)' }}>
                     <h3 className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
                         <Wallet className="w-5 h-5" /> Wallet Balances
                     </h3>
