@@ -23,6 +23,8 @@ function formatErr(msg: string): string {
     return msg;
 }
 
+import { Card, Button, Badge, MotionCard } from '@/components/ui';
+
 export default function DepositPage() {
     const { isConnected } = useAccount();
     const [selected, setSelected] = useState(TOKENS[0]);
@@ -33,9 +35,16 @@ export default function DepositPage() {
 
     if (!isConnected) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-5 text-center">
-                <ArrowDownToLine className="w-12 h-12 text-indigo-400" />
-                <h1 className="text-2xl font-bold text-white">Connect Wallet to Deposit</h1>
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-8 text-center">
+                <div className="w-24 h-24 border-2 border-black rounded-3xl flex items-center justify-center bg-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]">
+                    <ArrowDownToLine className="w-10 h-10 text-white" />
+                </div>
+                <div>
+                    <h1 className="text-4xl font-black mb-3 uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>Connect Wallet</h1>
+                    <p className="max-w-md mx-auto font-medium text-neutral-500">
+                        Connect to Arbitrum Sepolia to deposit collateral and start borrowing.
+                    </p>
+                </div>
                 <ConnectButton />
             </div>
         );
@@ -52,160 +61,163 @@ export default function DepositPage() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-12">
 
             {/* Page header */}
-            <div>
-                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                    <ArrowDownToLine className="w-7 h-7 text-indigo-400" /> Deposit Collateral
+            <div className="border-b-2 border-black pb-8">
+                <h1 className="text-5xl font-extrabold uppercase tracking-tighter flex items-center gap-4 text-foreground">
+                    <ArrowDownToLine className="w-10 h-10" /> Deposit
                 </h1>
-                <p className="text-[#a1a1c4] mt-1">
+                <p className="font-normal mt-1 text-neutral-500">
                     Deposit tokens into the SmartVault to unlock borrowing power.
                 </p>
             </div>
 
             {/* Current collateral */}
-            <div className="glass-card p-5 flex items-center justify-between">
+            <Card className="p-8 flex items-center justify-between">
                 <div>
-                    <p className="text-xs text-[#6b6b8a] uppercase tracking-wider mb-1">Your Current Collateral Value</p>
-                    <p className="text-2xl font-bold text-white">${parseFloat(colValue).toFixed(4)}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-neutral-400">Current Collateral Value</p>
+                    <p className="text-4xl font-black tracking-tighter">${parseFloat(colValue).toFixed(4)}</p>
                 </div>
-                <div className="text-xs text-[#6b6b8a] text-right">
-                    <p>Max borrow: <span className="text-white font-semibold">${(parseFloat(colValue) * 0.75).toFixed(4)}</span></p>
-                    <p>at 75% LTV</p>
+                <div className="text-right">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">Max borrow</p>
+                    <p className="text-xl font-black tracking-tight">${(parseFloat(colValue) * 0.75).toFixed(4)}</p>
+                    <Badge variant="conf" className="mt-2 text-[10px] px-3 py-1 uppercase font-black">75% LTV</Badge>
                 </div>
-            </div>
+            </Card>
 
             {/* Token selector */}
-            <div className="glass-card p-6 space-y-5">
+            <Card className="p-8 space-y-8">
                 <div>
-                    <label className="block text-sm font-semibold text-[#a1a1c4] mb-3">Select Token</label>
-                    <div className="grid grid-cols-3 gap-3">
+                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-4 text-center">Select Token Asset</label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {TOKENS.map((t) => (
                             <button key={t.address}
                                 onClick={() => { setSelected(t); setAmount(''); }}
-                                className="p-4 rounded-xl text-left transition-all"
+                                className="p-6 rounded-2xl text-center transition-all border-2 group shadow-[4px_4px_0px_0px_rgba(35,30,25,1)] hover:-translate-y-1"
                                 style={{
-                                    background: selected.address === t.address ? `${t.color}15` : 'rgba(255,255,255,0.03)',
-                                    border: `2px solid ${selected.address === t.address ? t.color : 'rgba(255,255,255,0.08)'}`,
+                                    background: selected.address === t.address ? 'var(--bg-warm-footer)' : 'white',
+                                    borderColor: 'hsl(var(--border))',
+                                    color: 'hsl(var(--foreground))',
                                 }}>
-                                <p className="font-bold text-sm text-white mb-0.5" style={{ color: t.color }}>{t.symbol}</p>
-                                <p className="text-xs text-[#6b6b8a]">Weight: {t.weight}%</p>
+                                <p className="font-extrabold text-lg tracking-tighter uppercase mb-1">{t.symbol}</p>
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${selected.address === t.address ? 'text-neutral-500' : 'text-neutral-400'}`}>Weight: {t.weight}%</p>
                             </button>
                         ))}
                     </div>
-                    <p className="text-xs text-[#6b6b8a] mt-2">{selected.desc}</p>
                 </div>
 
                 {/* Amount */}
-                <div>
-                    <div className="flex justify-between mb-2">
-                        <label className="text-sm font-semibold text-[#a1a1c4]">Amount</label>
-                        <span className="text-xs text-[#6b6b8a]">
-                            Balance: <span className="text-white font-medium">{balN.toLocaleString(undefined, { maximumFractionDigits: 2 })} {selected.symbol}</span>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-end">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Amount to Deposit</label>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500">
+                            Bal: <span className="text-black font-black">{balN.toLocaleString(undefined, { maximumFractionDigits: 2 })} {selected.symbol}</span>
                         </span>
                     </div>
                     <div className="relative">
                         <input
                             type="number" min="0"
-                            className="proto-input pr-20"
+                            className="w-full p-6 border-2 border-black rounded-2xl font-black text-2xl tracking-tighter outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow pr-24"
                             placeholder="0.00"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
                         />
-                        <button
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setAmount(balN.toString())}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2.5 py-1 rounded-md transition-colors"
-                            style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}>
+                            className="absolute right-4 top-1/2 -translate-y-1/2 h-10 font-black">
                             MAX
-                        </button>
+                        </Button>
                     </div>
                     {amtN > balN && balN > 0 && (
-                        <p className="text-xs text-red-400 mt-1.5">Amount exceeds wallet balance.</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-red-500 mt-2 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" /> Amount exceeds wallet balance.
+                        </p>
                     )}
                 </div>
 
                 {/* Preview */}
                 {amtN > 0 && (
-                    <div className="rounded-xl p-4 space-y-2"
-                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-[#a1a1c4]">Depositing</span>
-                            <span className="text-white font-semibold">{amtN.toFixed(4)} {selected.symbol}</span>
+                    <div className="rounded-2xl p-6 space-y-3 bg-neutral-50 border-2 border-dashed border-black/20">
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-neutral-400">Depositing</span>
+                            <span className="text-black">{amtN.toFixed(4)} {selected.symbol}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-[#a1a1c4]">Risk weight</span>
-                            <span className="text-white font-semibold">{selected.weight}%</span>
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-neutral-400">Risk weight</span>
+                            <span className="text-black">{selected.weight}%</span>
                         </div>
-                        <div className="flex justify-between text-sm border-t pt-2" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                            <span className="text-[#a1a1c4] font-medium">Collateral value added</span>
-                            <span className="font-bold" style={{ color: selected.color }}>+${colAdded.toFixed(4)}</span>
+                        <div className="flex justify-between text-xs font-black uppercase tracking-tighter border-t border-black/10 pt-3">
+                            <span className="text-neutral-400">Collateral value added</span>
+                            <span className="text-black text-lg">+${colAdded.toFixed(4)}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-[#a1a1c4]">Additional borrow capacity</span>
-                            <span className="text-white font-semibold">+${(colAdded * 0.75).toFixed(4)}</span>
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-neutral-400">Additional borrow capacity</span>
+                            <span className="text-black">+${(colAdded * 0.75).toFixed(4)}</span>
                         </div>
                     </div>
                 )}
 
                 {/* 2-step info */}
                 {amtN > 0 && !isPending && !isSuccess && (
-                    <div className="flex items-start gap-2.5 text-xs rounded-lg p-3"
-                        style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: '#a5b4fc' }}>
-                        <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                        This requires <strong className="mx-1">2 MetaMask confirmations</strong>:
-                        (1) Approve token spending → (2) Deposit into vault.
-                    </div>
-                )}
-
-                {/* Step indicator */}
-                {isPending && (
-                    <div className="flex items-center gap-3 rounded-xl p-4"
-                        style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)' }}>
-                        <div className="spinner flex-shrink-0" />
+                    <div className="flex items-start gap-4 text-[10px] font-black uppercase tracking-widest rounded-2xl p-6 bg-black text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
+                        <Info className="w-5 h-5 flex-shrink-0" />
                         <div>
-                            <p className="text-sm font-semibold text-indigo-300">
-                                {step === 'approving' ? 'Step 1/2 — Approving…'
-                                    : step === 'depositing' ? 'Step 2/2 — Depositing…'
-                                        : 'Processing…'}
-                            </p>
-                            <p className="text-xs text-indigo-400/70 mt-0.5">Check MetaMask for a pending confirmation</p>
+                            REQUIRES 2 TRANSACTIONS:
+                            <p className="mt-1 text-neutral-400">(1) APPROVE SPENDING → (2) DEPOSIT TO VAULT</p>
                         </div>
                     </div>
                 )}
 
-                {/* Error */}
-                {error && (
-                    <div className="flex items-start gap-3 rounded-xl p-4"
-                        style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)' }}>
-                        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                            <p className="text-sm font-semibold text-red-300">Transaction Failed</p>
-                            <p className="text-xs text-red-400/80 mt-0.5">{formatErr((error as any).message ?? '')}</p>
-                        </div>
-                    </div>
-                )}
+                {/* Status messages using Badges/Alerts styling */}
+                {(isPending || error || isSuccess) && (
+                    <div className="space-y-4">
+                        {isPending && (
+                            <div className="flex items-center gap-4 rounded-2xl p-6 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="spinner border-black border-t-transparent" />
+                                <div>
+                                    <p className="text-sm font-black uppercase tracking-widest">
+                                        {step === 'approving' ? 'Step 1/2 — Approving…'
+                                            : step === 'depositing' ? 'Step 2/2 — Depositing…'
+                                                : 'Processing…'}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
-                {/* Success */}
-                {isSuccess && (
-                    <div className="flex items-center gap-3 rounded-xl p-4"
-                        style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)' }}>
-                        <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <p className="text-sm font-semibold text-green-300">Deposit successful! Collateral added to vault.</p>
+                        {error && (
+                            <div className="flex items-start gap-4 rounded-2xl p-6 bg-red-50 border-2 border-red-500 text-red-500 shadow-[4px_4px_0px_0px_rgba(239,68,68,0.2)]">
+                                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                <div>
+                                    <p className="text-sm font-black uppercase tracking-widest">Transaction Failed</p>
+                                    <p className="text-[10px] font-bold mt-1 opacity-80">{formatErr((error as any).message ?? '')}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {isSuccess && (
+                            <div className="flex items-center gap-4 rounded-2xl p-6 bg-green-50 border-2 border-green-500 text-green-500 shadow-[4px_4px_0px_0px_rgba(34,197,94,0.2)]">
+                                <Check className="w-5 h-5 flex-shrink-0" />
+                                <p className="text-sm font-black uppercase tracking-widest">Deposit successful!</p>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 {/* Button */}
-                <button
+                <Button
                     onClick={handleDeposit}
                     disabled={!amount || amtN <= 0 || amtN > balN || isPending}
-                    className="btn-glow w-full py-3.5 rounded-xl font-semibold text-white text-sm"
-                    style={(!amount || amtN <= 0 || amtN > balN || isPending) ? { opacity: 0.5, cursor: 'not-allowed', boxShadow: 'none', transform: 'none' } : {}}>
-                    {step === 'approving' ? '⏳ Step 1/2: Approving…'
-                        : step === 'depositing' ? '⏳ Step 2/2: Depositing…'
-                            : '↓ Deposit Collateral'}
-                </button>
-            </div>
+                    variant="default"
+                    size="lg"
+                    className="w-full h-16 text-lg font-extrabold uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(35,30,25,1)]">
+                    {step === 'approving' ? '⏳ APPROVING…'
+                        : step === 'depositing' ? '⏳ DEPOSITING…'
+                            : '↓ DEPOSIT ASSETS'}
+                </Button>
+            </Card>
         </div>
     );
 }

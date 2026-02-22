@@ -2,14 +2,17 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Shield, Zap, BarChart2, Lock, RefreshCw, TrendingDown } from 'lucide-react';
-import { Stagger, StaggerItem, Badge, MotionCard } from '@/components/ui';
+import {
+  ArrowRight, ArrowUpRight, Shield, Zap, BarChart2, Lock, RefreshCw, TrendingDown,
+  Users, Database, ShieldCheck, Activity, Hexagon
+} from 'lucide-react';
+import { Stagger, StaggerItem, Badge, Button } from '@/components/ui';
 
 const stats = [
-  { label: 'Total Value Locked', value: '$2.1M+', sub: 'Testnet demo' },
-  { label: 'Active Borrowers', value: '340+', sub: 'On Arbitrum Sepolia' },
-  { label: 'Anti-Liquidations', value: '58', sub: 'Positions auto-protected' },
-  { label: 'Avg. Health Factor', value: '2.41×', sub: 'Above safe threshold' },
+  { label: 'Total Value Locked', value: '$2.1M+', sub: 'Testnet demo', icon: Database, color: 'text-blue-500', bg: 'bg-blue-50' },
+  { label: 'Active Borrowers', value: '340+', sub: 'On Arbitrum Sepolia', icon: Users, color: 'text-purple-500', bg: 'bg-purple-50' },
+  { label: 'Anti-Liquidations', value: '58', sub: 'Positions auto-protected', icon: ShieldCheck, color: 'text-green-500', bg: 'bg-green-50' },
+  { label: 'Avg. Health Factor', value: '2.41×', sub: 'Above safe threshold', icon: Activity, color: 'text-amber-500', bg: 'bg-amber-50' },
 ];
 
 const features = [
@@ -37,96 +40,166 @@ const steps = [
 export default function HomePage() {
   return (
     <div className="space-y-24">
+      {/* ── Global Background decoration ────────── */}
+      <div className="fixed inset-0 pointer-events-none -z-10 bg-[var(--bg-warm)]">
+        <div className="absolute top-0 right-0 w-[60%] h-[50%] bg-primary/5 blur-[140px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-[50%] h-[40%] bg-[#ffd0e8]/10 blur-[120px] rounded-full" />
+      </div>
 
       {/* ── Hero ──────────────────────────────── */}
-      <section className="text-center pt-10 pb-4 relative">
-        {/* Glow blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-          <motion.div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-20"
-            style={{ background: 'radial-gradient(ellipse, #6366f1 0%, transparent 70%)' }}
-            animate={{ scale: [1, 1.08, 1], opacity: [0.18, 0.28, 0.18] }}
-            transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
-          />
-        </div>
+      <section className="relative w-screen left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] border-b-2 border-black bg-white/30 backdrop-blur-sm  pb-12  min-h-[90vh] flex items-center overflow-hidden">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-        >
-          <Badge variant="default" className="mb-6 text-xs px-4 py-1.5">
-            <span className="pulse-dot" /> Live on Arbitrum Sepolia Testnet
-          </Badge>
+            {/* Left Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+              className="lg:col-span-7 text-left z-20"
+            >
+              <div className="flex justify-start mb-6">
+                <Badge variant="conf" className="px-6 py-2 tracking-[0.2em] bg-[#ffd0e8] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase font-black text-[10px] rounded-full">
+                  Protocol Overview v1.0
+                </Badge>
+              </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight"
-            style={{ color: 'var(--text-primary)' }}>
-            DeFi Lending,{' '}
-            <span className="gradient-text">Reimagined</span>
-          </h1>
+              <h1 className="text-3xl md:text-7xl lg:text-[6.5rem] font-black mb-8 tracking-tighter text-foreground uppercase">
+                DEFI&nbsp;&nbsp;LENDING<br />
+                <span className="text-primary ">REIMAGINED</span>
+              </h1>
 
-          <p className="text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            Deposit multi-asset collateral, borrow USDC, and let the protocol automatically
-            protect your position during market volatility — no liquidation panic.
-          </p>
+              <p className="text-xl max-w-2xl mb-12 leading-relaxed font-normal text-neutral-500 italic">
+                Deposit multi-asset collateral, borrow USDC, and let the protocol automatically protect your position during market volatility — <span className="text-black font-bold not-italic">no liquidation panic.</span>
+              </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/dashboard">
-              <motion.div
-                className="btn-glow inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-white font-semibold text-base"
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                Launch App <ArrowRight className="w-4 h-4" />
-              </motion.div>
-            </Link>
-            <Link href="/market">
-              <motion.div
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-sm transition-all"
-                style={{
-                  color: 'var(--text-secondary)',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-color)',
-                }}
-                whileHover={{ scale: 1.03, color: 'var(--text-primary)' }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <TrendingDown className="w-4 h-4" /> Simulate Market Crash
-              </motion.div>
-            </Link>
+              <div className="flex flex-wrap items-center gap-6">
+                <Link href="/dashboard">
+                  <Button size="lg" className="rounded-full px-12 h-16 bg-black text-white hover:bg-neutral-800 transition-all font-black text-sm tracking-widest border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                    LAUNCH APP <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+                <Link href="/market">
+                  <Button size="lg" variant="outline" className="rounded-full px-10 h-16 font-black text-sm tracking-widest border-2 border-black bg-white hover:bg-[#fcfaf7] transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                    <TrendingDown className="w-5 h-5 mr-2" /> SIMULATE CRASH
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Right Side: Visual Animation */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.2 }}
+              className="lg:col-span-5 relative hidden lg:flex items-center justify-center p-8"
+            >
+              <div className="relative w-full aspect-square max-w-[480px]">
+                {/* Orbital Rings */}
+                {[...Array(3)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ rotate: 360 * (i % 2 === 0 ? 1 : -1) }}
+                    transition={{ duration: 15 + i * 5, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 border-2 border-dashed border-black/10 rounded-full"
+                    style={{ transform: `scale(${1 + i * 0.2}) rotateX(60deg)` }}
+                  />
+                ))}
+
+                {/* Central Vault Engine */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <motion.div
+                    animate={{ y: [0, -20, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="w-64 h-80 bg-white border-[3px] border-black rounded-[3rem] p-8 flex flex-col justify-between relative z-20 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(255,208,232,1)]">
+                        <Shield className="w-8 h-8 text-white" />
+                      </div>
+                      <Badge variant="success" className="bg-green-100 text-green-700 border-2 border-green-300 px-4 py-1 font-black text-[10px]">SECURE</Badge>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="text-3xl font-black leading-tight uppercase italic decoration-primary underline underline-offset-4">VAULT<br />ENGINE</h3>
+                      <div className="h-3 w-full bg-neutral-100 rounded-full overflow-hidden border-2 border-black/5">
+                        <motion.div
+                          animate={{ width: ["10%", "90%", "65%"] }}
+                          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                          className="h-full bg-primary"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-6 border-t-2 border-black/5 flex justify-between items-center">
+                      <div>
+                        <p className="text-[10px] font-black uppercase text-neutral-400 mb-1">Locked TVL</p>
+                        <p className="text-2xl font-black font-outfit">$2.14M</p>
+                      </div>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        className="w-12 h-12 border-2 border-black rounded-full flex items-center justify-center bg-[#ffd0e8] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      >
+                        <RefreshCw className="w-6 h-6" />
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* Orbs */}
+                {[
+                  { icon: Database, color: "bg-blue-500", pos: "top-0 left-1/4" },
+                  { icon: Zap, color: "bg-amber-500", pos: "bottom-0 right-1/4" },
+                  { icon: Hexagon, color: "bg-purple-500", pos: "top-1/3 right-0" },
+                ].map((orb, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ y: [0, -30, 0], scale: [1, 1.1, 1] }}
+                    transition={{ duration: 5 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
+                    className={`absolute ${orb.pos} w-16 h-16 ${orb.color} text-white border-[3px] border-black rounded-2xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center z-30`}
+                  >
+                    <orb.icon className="w-8 h-8" />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* ── Stats ─────────────────────────────── */}
-      <Stagger className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Stagger className="grid grid-cols-2 md:grid-cols-4 gap-12 py-12">
         {stats.map((s) => (
-          <StaggerItem key={s.label}>
-            <MotionCard className="p-6 text-center">
-              <p className="text-2xl md:text-3xl font-black gradient-text">{s.value}</p>
-              <p className="text-sm font-semibold mt-1" style={{ color: 'var(--text-primary)' }}>{s.label}</p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{s.sub}</p>
-            </MotionCard>
+          <StaggerItem key={s.label} className="flex flex-col items-center text-center">
+            <div className={`w-20 h-20 mb-6 flex items-center justify-center rounded-3xl ${s.bg} border-2 border-black/5`}>
+              <s.icon className={`w-10 h-10 ${s.color}`} strokeWidth={2.5} />
+            </div>
+            <p className="text-5xl font-black mb-2 tracking-tighter text-black uppercase">{s.value}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">{s.label}</p>
+            <p className="text-[10px] mt-1 font-medium text-neutral-400 italic">{s.sub}</p>
           </StaggerItem>
         ))}
       </Stagger>
 
       {/* ── How it works ──────────────────────── */}
-      <section>
+      <section className="py-12">
         <motion.div
-          className="text-center mb-10"
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-3xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-            Get Started in 4 Steps
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-neutral-500">Getting Started</p>
+          <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight uppercase">
+            The SECP Workflow
           </h2>
-          <p style={{ color: 'var(--text-secondary)' }}>No experience needed — try the full protocol in under 5 minutes.</p>
+          <p className="font-medium text-neutral-500 max-w-lg mx-auto italic">No experience needed — try the full protocol in under 5 minutes.</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {steps.map((s, i) => (
             <motion.div
               key={s.n}
@@ -134,40 +207,49 @@ export default function HomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.4 }}
+              className="flex"
             >
-              <MotionCard className="p-5 h-full flex flex-col">
-                <div className="text-4xl font-black mb-3 gradient-text opacity-60">{s.n}</div>
-                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{s.title}</h3>
-                <p className="text-sm leading-relaxed flex-1" style={{ color: 'var(--text-secondary)' }}>{s.desc}</p>
-                <Link href={s.href} className="mt-4">
-                  <motion.div
-                    className="text-xs font-semibold text-indigo-400 flex items-center gap-1"
-                    whileHover={{ x: 4 }}
-                  >
-                    {s.cta} <ArrowRight className="w-3 h-3" />
-                  </motion.div>
+              <div className="flex-1 flex flex-col group border-2 border-black rounded-2xl overflow-hidden bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <div className="p-8 flex-1">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${i % 3 === 0 ? 'bg-[#d0e8ff]' : i % 3 === 1 ? 'bg-[#ffe8d0]' : 'bg-[#ffd0e8]'
+                      }`}>
+                      {i % 3 === 0 ? 'Step' : i % 3 === 1 ? 'Action' : 'Goal'} {s.n.slice(1)}
+                    </div>
+                    <div className="w-10 h-10 border-2 border-black rounded-full flex items-center justify-center bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] group-hover:rotate-12 transition-transform">
+                      <Zap className="w-4 h-4 text-primary" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-black mb-4 tracking-tight uppercase leading-none">{s.title}</h3>
+                  <p className="text-sm font-normal leading-relaxed text-neutral-500 italic">{s.desc}</p>
+                </div>
+                <Link href={s.href}>
+                  <div className="p-5 border-t-2 border-black bg-[#F3DFC1] hover:bg-[#ebd2b0] transition-all flex items-center justify-between font-black text-xs tracking-widest uppercase cursor-pointer text-black">
+                    {s.cta} <ArrowUpRight className="w-4 h-4" />
+                  </div>
                 </Link>
-              </MotionCard>
+              </div>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* ── Features ──────────────────────────── */}
-      <section>
+      <section className="py-12 bg-black -mx-4 px-4 py-24 text-white rounded-[3rem]">
         <motion.div
-          className="text-center mb-10"
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-            What Makes SECP Different
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-neutral-400">Architecture</p>
+          <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-white uppercase italic">
+            Engineered Safety
           </h2>
-          <p style={{ color: 'var(--text-secondary)' }}>Smart protection built in — not bolted on.</p>
+          <p className="font-normal text-neutral-400 italic">Smart protection built in — not bolted on.</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {features.map((f, i) => (
             <motion.div
               key={f.title}
@@ -176,40 +258,37 @@ export default function HomePage() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.07, duration: 0.4 }}
             >
-              <MotionCard className="p-6 h-full">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
-                  style={{ background: `${f.color}15`, border: `1px solid ${f.color}25` }}>
-                  <f.icon className="w-5 h-5" style={{ color: f.color }} />
+              <div className="p-8 border-2 border-neutral-800 rounded-3xl bg-neutral-900/40 hover:border-white/20 transition-all group">
+                <div className={`w-14 h-14 border-2 border-white/10 rounded-2xl flex items-center justify-center mb-6 transition-all bg-white/5`}>
+                  <f.icon className="w-6 h-6" strokeWidth={2.5} style={{ color: f.color }} />
                 </div>
-                <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{f.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{f.desc}</p>
-              </MotionCard>
+                <h3 className="text-lg font-black mb-3 tracking-tight uppercase text-white italic">{f.title}</h3>
+                <p className="text-sm font-normal leading-relaxed text-neutral-400">{f.desc}</p>
+              </div>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* ── Collateral table ──────────────────── */}
-      <section>
+      <section className="py-24">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <MotionCard className="overflow-hidden">
-            <div className="p-6 border-b" style={{ borderColor: 'var(--border-color)' }}>
-              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Collateral Parameters</h2>
-              <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-                All tokens available as collateral on Arbitrum Sepolia
-              </p>
-            </div>
+          <div className="mb-12 text-center">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-neutral-500">Risk Assessment</p>
+            <h2 className="text-4xl font-black tracking-tight uppercase italic decoration-primary underline underline-offset-4">System Parameters</h2>
+          </div>
+
+          <div className="border-2 border-black rounded-3xl overflow-hidden bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: 'var(--bg-secondary)' }}>
-                    {['Token', 'Name', 'Oracle Price', 'Risk Weight', 'Max LTV', 'Use Case'].map(h => (
-                      <th key={h} className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider"
-                        style={{ color: 'var(--text-muted)' }}>{h}</th>
+                  <tr className="border-b-2 border-black bg-neutral-50">
+                    {['Token', 'Name', 'Oracle Price', 'Sim Weight', 'Max LTV', 'Use Case'].map(h => (
+                      <th key={h} className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-widest text-black">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -221,71 +300,55 @@ export default function HomePage() {
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: i * 0.1 }}
-                      className="transition-colors"
-                      style={{ borderBottom: '1px solid var(--border-color)' }}
+                      className="group border-b border-neutral-100 last:border-0"
                     >
-                      <td className="px-6 py-4">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black"
-                          style={{ background: `${c.color}15`, color: c.color }}>
+                      <td className="px-8 py-6">
+                        <div className="w-10 h-10 border-2 border-black rounded-xl flex items-center justify-center text-xs font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-white"
+                          style={{ background: c.color }}>
                           {c.sym.slice(1, 2)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 font-semibold" style={{ color: 'var(--text-primary)' }}>{c.sym}</td>
-                      <td className="px-6 py-4" style={{ color: 'var(--text-secondary)' }}>{c.price}</td>
-                      <td className="px-6 py-4">
-                        <Badge variant={c.weight === '100%' ? 'success' : c.weight === '80%' ? 'warning' : 'default'}>
+                      <td className="px-8 py-6 font-black uppercase tracking-tight">{c.sym}</td>
+                      <td className="px-8 py-6 font-medium text-neutral-500">{c.price}</td>
+                      <td className="px-8 py-6">
+                        <Badge variant={c.weight === '100%' ? 'success' : c.weight === '80%' ? 'warning' : 'default'} className="px-4">
                           {c.weight}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 font-semibold" style={{ color: 'var(--text-primary)' }}>75%</td>
-                      <td className="px-6 py-4 text-xs" style={{ color: 'var(--text-muted)' }}>{c.desc}</td>
+                      <td className="px-8 py-6 font-black">75%</td>
+                      <td className="px-8 py-6 text-xs font-medium text-neutral-400 italic">{c.desc}</td>
                     </motion.tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </MotionCard>
+          </div>
         </motion.div>
       </section>
 
       {/* ── CTA ───────────────────────────────── */}
-      <section>
+      <section className="pb-24">
         <motion.div
-          className="rounded-2xl p-12 text-center relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.12) 100%)', border: '1px solid rgba(99,102,241,0.2)' }}
+          className="rounded-[2.5rem] p-16 text-center relative overflow-hidden border-2 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <motion.div
-              className="absolute -top-24 -right-24 w-64 h-64 rounded-full opacity-10"
-              style={{ background: 'radial-gradient(circle, #6366f1, transparent)' }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            />
-          </div>
-          <h2 className="text-3xl font-bold mb-3 relative" style={{ color: 'var(--text-primary)' }}>
-            Ready to Try?
-          </h2>
-          <p className="mb-8 relative" style={{ color: 'var(--text-secondary)' }}>
-            No real money needed — everything runs on Arbitrum Sepolia testnet.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 relative">
-            <Link href="/faucet">
-              <motion.div className="btn-glow px-8 py-3.5 rounded-xl text-white font-semibold text-sm inline-flex gap-2"
-                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                Get Free Test Tokens
-              </motion.div>
-            </Link>
-            <Link href="/market">
-              <motion.div
-                className="px-8 py-3.5 rounded-xl font-semibold text-sm inline-flex items-center gap-2"
-                style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
-                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <TrendingDown className="w-4 h-4" /> Crash Demo
-              </motion.div>
-            </Link>
+          <div className="absolute inset-0 bg-neutral-50/50 pointer-events-none" />
+          <div className="relative z-10">
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-foreground uppercase tracking-tight italic">
+              Ready to Secure Your Yield?
+            </h2>
+            <p className="text-lg mb-12 text-neutral-600 font-normal max-w-xl mx-auto italic">
+              Join the future of DeFi lending. No real money needed — everything runs on Arbitrum Sepolia testnet.
+            </p>
+            <div className="flex flex-wrap justify-center gap-6">
+              <Link href="/faucet">
+                <Button size="lg" className="rounded-full px-12 h-14 bg-black text-white hover:bg-neutral-800 transition-all font-extrabold text-sm tracking-widest border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px]">
+                  GET TEST TOKENS <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </motion.div>
       </section>

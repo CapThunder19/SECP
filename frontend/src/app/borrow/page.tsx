@@ -20,6 +20,9 @@ function formatErr(msg: string): string {
     return msg;
 }
 
+import { Card, Button, Badge, MotionCard } from '@/components/ui';
+import Link from 'next/link';
+
 export default function BorrowPage() {
     const { isConnected } = useAccount();
 
@@ -36,9 +39,16 @@ export default function BorrowPage() {
 
     if (!isConnected) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-5 text-center">
-                <Landmark className="w-12 h-12 text-green-400" />
-                <h1 className="text-2xl font-bold text-white">Connect Wallet to Borrow</h1>
+            <div className="min-h-[60vh] flex flex-col items-center justify-center gap-8 text-center">
+                <div className="w-24 h-24 border-2 border-black rounded-3xl flex items-center justify-center bg-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]">
+                    <Landmark className="w-10 h-10 text-white" />
+                </div>
+                <div>
+                    <h1 className="text-4xl font-black mb-3 uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>Connect Wallet</h1>
+                    <p className="max-w-md mx-auto font-medium text-neutral-500">
+                        Connect to Arbitrum Sepolia to borrow USDC against your collateral.
+                    </p>
+                </div>
                 <ConnectButton />
             </div>
         );
@@ -52,245 +62,226 @@ export default function BorrowPage() {
     const est5 = borrowN * 0.05 * (parseInt(duration || '0') / 365);
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-12">
 
             {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                    <Landmark className="w-7 h-7 text-green-400" /> Borrow & Repay
+            <div className="border-b-2 border-black pb-8">
+                <h1 className="text-5xl font-black uppercase tracking-tighter flex items-center gap-4" style={{ color: 'var(--text-primary)' }}>
+                    <Landmark className="w-10 h-10" /> Borrow
                 </h1>
-                <p className="text-[#a1a1c4] mt-1">Borrow USDC against your collateral, repay at any time.</p>
+                <p className="font-medium mt-1 text-neutral-400">Borrow USDC against your collateral, repay at any time.</p>
             </div>
 
             {/* Position summary */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { label: 'Max Borrow', val: maxL ? '…' : `$${maxN.toFixed(4)}`, color: '#a5b4fc' },
-                    { label: 'Current Debt', val: debtL ? '…' : `$${debtN.toFixed(4)}`, color: debtN > 0 ? '#ef4444' : '#22c55e' },
-                    { label: 'Available', val: `$${avail.toFixed(4)}`, color: '#22c55e' },
-                ].map(({ label, val, color }) => (
-                    <div key={label} className="glass-card p-4 text-center">
-                        <p className="text-xs text-[#6b6b8a] mb-1">{label}</p>
-                        <p className="text-lg font-bold" style={{ color }}>{val}</p>
+                    { label: 'Max Borrow', val: maxL ? '…' : `$${maxN.toFixed(4)}` },
+                    { label: 'Current Debt', val: debtL ? '…' : `$${debtN.toFixed(4)}`, highlight: debtN > 0 },
+                    { label: 'Available', val: `$${avail.toFixed(4)}` },
+                ].map(({ label, val, highlight }) => (
+                    <div key={label} className="p-6 border-2 border-black rounded-2xl bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-neutral-400 group-hover:text-black transition-colors">{label}</p>
+                        <p className={`text-2xl font-black tracking-tighter ${highlight ? 'text-red-500' : 'text-black'}`}>{val}</p>
                     </div>
                 ))}
             </div>
 
             {/* ── BORROW CARD ──────────────────────────────────── */}
-            <div className="glass-card p-6 space-y-5">
-                <h2 className="font-bold text-white text-lg">Borrow USDC</h2>
+            <Card className="p-8 space-y-8">
+                <h2 className="text-2xl font-black uppercase tracking-tight">Borrow USDC</h2>
 
                 {debtN > 0 && (
-                    <div className="flex items-start gap-3 rounded-xl p-4"
-                        style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)' }}>
-                        <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-yellow-300">
-                            You have an active loan of <strong>${debtN.toFixed(4)} USDC</strong>.
-                            Only one active loan is allowed — repay it below before borrowing again.
+                    <div className="flex items-start gap-4 rounded-2xl p-6 bg-yellow-50 border-2 border-yellow-500 shadow-[4px_4px_0px_0px_rgba(245,158,11,0.2)] text-yellow-700">
+                        <AlertCircle className="w-6 h-6 flex-shrink-0" />
+                        <p className="text-xs font-bold leading-relaxed">
+                            ACTIVE LOAN DETECTED: <strong>${debtN.toFixed(4)} USDC</strong>.
+                            <br />You must repay it fully before borrowing again.
                         </p>
                     </div>
                 )}
 
                 {/* Amount */}
-                <div>
-                    <div className="flex justify-between mb-2">
-                        <label className="text-sm font-semibold text-[#a1a1c4]">Borrow Amount (USDC)</label>
-                    </div>
+                <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Borrow Amount (USDC)</label>
                     <div className="relative">
                         <input type="number" min="0"
-                            className="proto-input pr-20"
+                            className="w-full p-6 border-2 border-black rounded-2xl font-black text-2xl tracking-tighter outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow pr-24"
                             placeholder="0.00"
                             value={borrowAmt}
                             onChange={(e) => setBorrowAmt(e.target.value)}
                             disabled={debtN > 0 || borrowPending}
                         />
-                        <button
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setBorrowAmt(avail.toFixed(4))}
                             disabled={debtN > 0}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2.5 py-1 rounded-md"
-                            style={{ background: 'rgba(34,197,94,0.15)', color: '#86efac' }}>
+                            className="absolute right-4 top-1/2 -translate-y-1/2 h-10 font-black">
                             MAX
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
                 {/* Duration */}
-                <div>
-                    <label className="text-sm font-semibold text-[#a1a1c4] block mb-2">Loan Duration (Days)</label>
-                    <div className="grid grid-cols-6 gap-1.5 mb-2">
+                <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Loan Duration</label>
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                         {DURATIONS.map((d) => (
                             <button key={d}
                                 onClick={() => setDuration(String(d))}
                                 disabled={debtN > 0}
-                                className="py-2 text-xs rounded-lg font-semibold transition-all"
-                                style={{
-                                    background: duration === String(d) ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.04)',
-                                    border: `1px solid ${duration === String(d) ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                                    color: duration === String(d) ? '#86efac' : '#6b6b8a',
-                                }}>
-                                {d}d
+                                className={`py-3 text-xs rounded-xl font-black uppercase border-2 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] ${duration === String(d) ? 'bg-black text-white border-black' : 'bg-white text-black border-black hover:bg-neutral-50'
+                                    }`}>
+                                {d}D
                             </button>
                         ))}
                     </div>
-                    <input type="number" min="1" max="365"
-                        className="proto-input"
-                        placeholder="Custom days"
-                        value={duration}
-                        onChange={(e) => setDuration(e.target.value)}
-                        disabled={debtN > 0}
-                    />
+                    <div className="relative">
+                        <input type="number" min="1" max="365"
+                            className="w-full p-4 border-2 border-black rounded-xl font-black text-sm tracking-widest uppercase outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow"
+                            placeholder="Custom days (1-365)"
+                            value={duration}
+                            onChange={(e) => setDuration(e.target.value)}
+                            disabled={debtN > 0}
+                        />
+                    </div>
                 </div>
 
                 {/* Summary */}
                 {borrowN > 0 && (
-                    <div className="rounded-xl p-4 space-y-2"
-                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-[#a1a1c4]">Borrow Amount</span>
-                            <span className="text-white font-semibold">${borrowN.toFixed(4)} USDC</span>
+                    <div className="rounded-2xl p-6 space-y-3 bg-neutral-50 border-2 border-dashed border-black/20 text-[10px] font-black uppercase tracking-widest">
+                        <div className="flex justify-between">
+                            <span className="text-neutral-400">Borrow Principal</span>
+                            <span className="text-black">${borrowN.toFixed(4)} USDC</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-[#a1a1c4]">Est. Interest (5% APR)</span>
-                            <span className="text-white font-semibold">${est5.toFixed(4)}</span>
+                        <div className="flex justify-between">
+                            <span className="text-neutral-400">Est. Interest (5% APR)</span>
+                            <span className="text-black">${est5.toFixed(4)}</span>
                         </div>
-                        <div className="flex justify-between text-sm border-t pt-2" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                            <span className="text-white font-medium">Total to repay</span>
-                            <span className="font-bold text-white">${(borrowN + est5).toFixed(4)}</span>
-                        </div>
-                    </div>
-                )}
-
-                {borrowN > 0 && debtN === 0 && (
-                    <div className="flex items-start gap-2 text-xs rounded-lg p-3"
-                        style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', color: '#86efac' }}>
-                        <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                        Borrowing requires 1 wallet confirmation — USDC is sent directly to your wallet.
-                    </div>
-                )}
-
-                {borrowPending && (
-                    <div className="flex items-center gap-3 rounded-xl p-4"
-                        style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)' }}>
-                        <div className="spinner flex-shrink-0" />
-                        <p className="text-sm font-semibold text-green-300">Borrowing… confirm in MetaMask</p>
-                    </div>
-                )}
-
-                {borrowErr && (
-                    <div className="flex items-start gap-3 rounded-xl p-4"
-                        style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)' }}>
-                        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                            <p className="text-sm font-semibold text-red-300">Borrow Failed</p>
-                            <p className="text-xs text-red-400/80 mt-0.5">{formatErr((borrowErr as any).message ?? '')}</p>
+                        <div className="flex justify-between border-t border-black/10 pt-3 text-xs tracking-tighter">
+                            <span className="text-neutral-400">Total Obligation</span>
+                            <span className="text-black text-lg">${(borrowN + est5).toFixed(4)}</span>
                         </div>
                     </div>
                 )}
 
-                {borrowOk && (
-                    <div className="flex items-center gap-3 rounded-xl p-4"
-                        style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)' }}>
-                        <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <p className="text-sm font-semibold text-green-300">Borrowed! USDC sent to your wallet.</p>
-                    </div>
-                )}
+                {/* Status messages */}
+                <div className="space-y-4">
+                    {borrowPending && (
+                        <div className="flex items-center gap-4 rounded-2xl p-6 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <div className="spinner border-black border-t-transparent" />
+                            <p className="text-sm font-black uppercase tracking-widest">Confirming on-chain…</p>
+                        </div>
+                    )}
 
-                <button
+                    {borrowErr && (
+                        <div className="flex items-start gap-4 rounded-2xl p-6 bg-red-50 border-2 border-red-500 text-red-500 shadow-[4px_4px_0px_0px_rgba(239,68,68,0.2)]">
+                            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                            <div>
+                                <p className="text-sm font-black uppercase tracking-widest">Borrow Failed</p>
+                                <p className="text-[10px] font-bold mt-1 opacity-80">{formatErr((borrowErr as any).message ?? '')}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {borrowOk && (
+                        <div className="flex items-center gap-4 rounded-2xl p-6 bg-green-50 border-2 border-green-500 text-green-500 shadow-[4px_4px_0px_0px_rgba(34,197,94,0.2)]">
+                            <Check className="w-5 h-5 flex-shrink-0" />
+                            <p className="text-sm font-black uppercase tracking-widest">Transaction Confirmed!</p>
+                        </div>
+                    )}
+                </div>
+
+                <Button
                     onClick={() => { borrow(borrowAmt, parseInt(duration)); setBorrowAmt(''); }}
                     disabled={!borrowAmt || borrowN <= 0 || borrowN > avail || !duration || parseInt(duration) <= 0 || borrowPending || debtN > 0}
-                    className="btn-glow w-full py-3.5 rounded-xl font-semibold text-white text-sm"
-                    style={(!borrowAmt || borrowN <= 0 || borrowN > avail || borrowPending || debtN > 0)
-                        ? { opacity: 0.5, cursor: 'not-allowed', boxShadow: 'none', transform: 'none' } : {}}>
-                    {borrowPending ? '⏳ Borrowing…'
-                        : debtN > 0 ? '⚠️ Repay Active Loan First'
-                            : avail <= 0 ? '🏦 Deposit Collateral to Borrow'
-                                : '↗ Borrow USDC'}
-                </button>
+                    size="lg"
+                    className="w-full h-16 text-lg font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                    {borrowPending ? '⏳ BORROWING…'
+                        : debtN > 0 ? '⚠️ REPAY DEBT FIRST'
+                            : avail <= 0 ? '🏦 DEPOSIT ASSETS'
+                                : '↗ BORROW USDC'}
+                </Button>
 
                 {avail <= 0 && debtN === 0 && (
-                    <p className="text-center text-xs text-[#6b6b8a]">
-                        No collateral deposited yet. Go to{' '}
-                        <a href="/deposit" className="text-indigo-400 hover:underline">Deposit</a> first.
+                    <p className="text-center text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                        No collateral deposited. <Link href="/deposit" className="text-black underline underline-offset-4">DEPOSIT FIRST</Link>
                     </p>
                 )}
-            </div>
+            </Card>
 
             {/* ── REPAY CARD ──────────────────────────────────── */}
             {debtN > 0 && (
-                <div className="glass-card p-6 space-y-5">
-                    <h2 className="font-bold text-white text-lg flex items-center gap-2">
-                        <RefreshCcw className="w-5 h-5 text-red-400" /> Repay Debt
+                <Card className="p-8 space-y-8">
+                    <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+                        <RefreshCcw className="w-6 h-6" /> Repay Debt
                     </h2>
 
-                    <div className="flex justify-between text-sm p-4 rounded-xl"
-                        style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                        <span className="text-[#a1a1c4]">Outstanding Debt</span>
-                        <span className="font-bold text-red-400">${debtN.toFixed(4)} USDC</span>
-                    </div>
-
-                    <div className="flex justify-between text-sm">
-                        <label className="text-sm font-semibold text-[#a1a1c4]">Repay Amount</label>
-                        <span className="text-xs text-[#6b6b8a]">
-                            USDC Balance: <span className="text-white font-medium">{parseFloat(usdcBal).toFixed(4)}</span>
-                        </span>
-                    </div>
-
-                    <div className="relative">
-                        <input type="number" min="0"
-                            className="proto-input pr-20"
-                            placeholder="0.00"
-                            value={repayAmt}
-                            onChange={(e) => setRepayAmt(e.target.value)}
-                            disabled={repayPending}
-                        />
-                        <button
-                            onClick={() => setRepayAmt(debt)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold px-2.5 py-1 rounded-md"
-                            style={{ background: 'rgba(239,68,68,0.15)', color: '#fca5a5' }}>
-                            FULL
-                        </button>
-                    </div>
-
-                    <div className="flex items-start gap-2 text-xs rounded-lg p-3"
-                        style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', color: '#a5b4fc' }}>
-                        <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                        Repay needs 2 confirmations: (1) approve USDC spending → (2) repay loan.
-                    </div>
-
-                    {repayPending && (
-                        <div className="flex items-center gap-3 rounded-xl p-4"
-                            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
-                            <div className="spinner flex-shrink-0" />
-                            <p className="text-sm font-semibold text-red-300">Repaying… confirm in MetaMask</p>
+                    <div className="flex justify-between items-center p-6 bg-red-50 border-2 border-red-500 rounded-2xl shadow-[4px_4px_0px_0px_rgba(239,68,68,0.1)]">
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400 mb-1">Outstanding Obligation</p>
+                            <p className="text-3xl font-black tracking-tight text-red-600">${debtN.toFixed(4)} USDC</p>
                         </div>
-                    )}
+                        <Badge variant="destructive" className="px-4 py-2 uppercase font-black">ACTIVE DEBT</Badge>
+                    </div>
 
-                    {repayErr && (
-                        <div className="flex items-start gap-3 rounded-xl p-4"
-                            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)' }}>
-                            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                            <p className="text-xs text-red-400/80">{formatErr((repayErr as any).message ?? '')}</p>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-end">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Repay Amount</label>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500">
+                                USDC Bal: <span className="text-black font-black">{parseFloat(usdcBal).toFixed(4)}</span>
+                            </span>
                         </div>
-                    )}
-
-                    {repayOk && (
-                        <div className="flex items-center gap-3 rounded-xl p-4"
-                            style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)' }}>
-                            <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                            <p className="text-sm font-semibold text-green-300">Repayment successful!</p>
+                        <div className="relative">
+                            <input type="number" min="0"
+                                className="w-full p-6 border-2 border-black rounded-2xl font-black text-2xl tracking-tighter outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow pr-24"
+                                placeholder="0.00"
+                                value={repayAmt}
+                                onChange={(e) => setRepayAmt(e.target.value)}
+                                disabled={repayPending}
+                            />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setRepayAmt(debt)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 h-10 font-black">
+                                FULL
+                            </Button>
                         </div>
-                    )}
+                    </div>
 
-                    <button
+                    <div className="space-y-4">
+                        {repayPending && (
+                            <div className="flex items-center gap-4 rounded-2xl p-6 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="spinner border-black border-t-transparent" />
+                                <p className="text-sm font-black uppercase tracking-widest">Repayment Processing…</p>
+                            </div>
+                        )}
+
+                        {repayErr && (
+                            <div className="flex items-start gap-4 rounded-2xl p-6 bg-red-50 border-2 border-red-500 text-red-500 shadow-[4px_4px_0px_0px_rgba(239,68,68,0.2)]">
+                                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                <p className="text-[10px] font-bold opacity-80">{formatErr((repayErr as any).message ?? '')}</p>
+                            </div>
+                        )}
+
+                        {repayOk && (
+                            <div className="flex items-center gap-4 rounded-2xl p-6 bg-green-50 border-2 border-green-500 text-green-500 shadow-[4px_4px_0px_0px_rgba(34,197,94,0.2)]">
+                                <Check className="w-5 h-5 flex-shrink-0" />
+                                <p className="text-sm font-black uppercase tracking-widest">Repayment Done!</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <Button
                         onClick={() => repay(repayAmt)}
                         disabled={!repayAmt || repayN <= 0 || repayN > debtN || repayPending}
-                        className="w-full py-3.5 rounded-xl font-semibold text-white text-sm transition-all"
-                        style={(!repayAmt || repayN <= 0 || repayN > debtN || repayPending)
-                            ? { background: 'rgba(239,68,68,0.3)', opacity: 0.5, cursor: 'not-allowed' }
-                            : { background: 'linear-gradient(135deg,#dc2626,#b91c1c)', boxShadow: '0 0 20px rgba(239,68,68,0.3)' }}>
-                        {repayPending ? '⏳ Repaying…' : '↙ Repay USDC'}
-                    </button>
-                </div>
+                        variant="destructive"
+                        size="lg"
+                        className="w-full h-16 font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(239,68,68,0.3)] hover:shadow-none translate-x-1 translate-y-1">
+                        {repayPending ? '⏳ REPAYING…' : '↙ REPAY USDC'}
+                    </Button>
+                </Card>
             )}
         </div>
     );

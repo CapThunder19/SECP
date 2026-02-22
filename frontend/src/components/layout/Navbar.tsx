@@ -65,26 +65,25 @@ export function Navbar() {
 
     return (
         <motion.header
-            className="sticky top-0 z-50 navbar"
+            className="sticky top-0 z-50 bg-[var(--bg-warm)]/80 backdrop-blur-xl border-b-2 border-black"
             initial={{ y: -60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-            style={{ boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.12)' : 'none' }}
         >
             <div className="container mx-auto px-4 max-w-6xl">
-                <div className="flex items-center justify-between h-16">
+                <div className="flex items-center justify-between h-20">
 
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2.5">
+                    <Link href="/" className="flex items-center gap-3">
                         <motion.div
-                            className="w-8 h-8 rounded-xl flex items-center justify-center btn-glow"
+                            className="w-10 h-10 rounded-xl flex items-center justify-center bg-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)] border border-black"
                             whileHover={{ scale: 1.1, rotate: 5 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            <Shield className="w-4 h-4 text-white" />
+                            <Shield className="w-5 h-5 text-white" />
                         </motion.div>
-                        <span className="font-bold text-base tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                            SECP <span className="gradient-text">Protocol</span>
+                        <span className="font-black text-xl tracking-tighter uppercase" style={{ color: 'var(--text-primary)' }}>
+                            SECP <span className="text-neutral-400">PROTOCOL</span>
                         </span>
                     </Link>
 
@@ -95,21 +94,19 @@ export function Navbar() {
                             return (
                                 <Link key={href} href={href}>
                                     <motion.div
-                                        className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors relative"
+                                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-colors relative uppercase tracking-widest"
                                         style={{
                                             color: active ? 'white' : 'var(--text-secondary)',
-                                            background: active ? 'var(--accent-hex)' : 'transparent',
                                         }}
-                                        whileHover={{ scale: 1.03 }}
-                                        whileTap={{ scale: 0.97 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                     >
                                         <Icon className="w-3.5 h-3.5" />
                                         {label}
                                         {active && (
                                             <motion.div
                                                 layoutId="nav-indicator"
-                                                className="absolute inset-0 rounded-xl -z-10"
-                                                style={{ background: 'var(--accent-hex)' }}
+                                                className="absolute inset-0 rounded-xl -z-10 bg-black border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
                                                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                             />
                                         )}
@@ -120,21 +117,20 @@ export function Navbar() {
                     </nav>
 
                     {/* Right: theme + wallet + hamburger */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <ThemeToggle />
                         <div className="hidden md:block">
                             <ConnectButton showBalance={false} chainStatus="icon" accountStatus="avatar" />
                         </div>
                         <motion.button
-                            className="md:hidden w-9 h-9 rounded-xl flex items-center justify-center"
-                            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
+                            className="md:hidden w-10 h-10 rounded-xl flex items-center justify-center border-2 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                             onClick={() => setMenuOpen(!menuOpen)}
                             whileTap={{ scale: 0.95 }}
                             aria-label="Toggle menu"
                         >
                             <AnimatePresence mode="wait" initial={false}>
                                 <motion.div key={menuOpen ? 'x' : 'menu'} initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
-                                    {menuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                                    {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                                 </motion.div>
                             </AnimatePresence>
                         </motion.button>
@@ -165,10 +161,11 @@ export function Navbar() {
                                             <Link
                                                 href={href}
                                                 onClick={() => setMenuOpen(false)}
-                                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                                                className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-black transition-all uppercase tracking-widest border-2 border-transparent"
                                                 style={{
                                                     color: active ? 'white' : 'var(--text-secondary)',
-                                                    background: active ? 'var(--accent-hex)' : 'transparent',
+                                                    background: active ? 'black' : 'transparent',
+                                                    borderColor: active ? 'black' : 'transparent',
                                                 }}
                                             >
                                                 <Icon className="w-4 h-4" />
@@ -177,7 +174,7 @@ export function Navbar() {
                                         </motion.div>
                                     );
                                 })}
-                                <div className="px-3 pt-2">
+                                <div className="px-3 pt-4 border-t border-black/5 mt-2">
                                     <ConnectButton showBalance={false} chainStatus="none" />
                                 </div>
                             </div>

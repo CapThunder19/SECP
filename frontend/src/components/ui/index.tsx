@@ -12,27 +12,25 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { motion, HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-/* ─────────────────────────────────────────
-   BUTTON
-───────────────────────────────────────── */
+
 const buttonVariants = cva(
-    'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 select-none',
+    'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-extrabold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-80 disabled:grayscale-[0.3] select-none uppercase tracking-tight',
     {
         variants: {
             variant: {
-                default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90',
-                glow: 'btn-glow text-white',
-                destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-                outline: 'border border-input bg-background hover:bg-accent/10 hover:text-accent-foreground',
-                secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-                ghost: 'hover:bg-accent/10 hover:text-accent-foreground',
-                link: 'text-primary underline-offset-4 hover:underline',
+                default: 'bg-primary text-white border-2 border-black/10 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 shadow-[2px_2px_0px_0px_rgba(35,30,25,1)] hover:shadow-[4px_4px_0px_0px_rgba(35,30,25,1)]',
+                glow: 'bg-primary text-white border-2 border-primary-foreground/20 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 shadow-[4px_4px_0px_0px_rgba(35,30,25,1)]',
+                destructive: 'bg-red-500 text-white border-2 border-border/20 hover:bg-red-600 shadow-[2px_2px_0px_0px_rgba(35,30,25,1)]',
+                outline: 'border-2 border-border/20 bg-transparent hover:bg-neutral-100 shadow-[2px_2px_0px_0px_rgba(35,30,25,1)]',
+                secondary: 'bg-[#F3DFC1] text-black border-2 border-border/20 hover:bg-[#F3DFC1]/80 shadow-[2px_2px_0px_0px_rgba(35,30,25,1)]',
+                ghost: 'hover:bg-neutral-100 text-neutral-600',
+                link: 'text-primary underline-offset-4 hover:underline lowercase font-normal',
             },
             size: {
-                default: 'h-10 px-5 py-2',
-                sm: 'h-8  px-3 text-xs',
-                lg: 'h-12 px-8 text-base',
-                icon: 'h-9 w-9',
+                default: 'h-11 px-6 py-2',
+                sm: 'h-9  px-4 text-xs',
+                lg: 'h-14 px-10 text-base',
+                icon: 'h-10 w-10',
             },
         },
         defaultVariants: { variant: 'default', size: 'default' },
@@ -72,23 +70,23 @@ CardHeader.displayName = 'CardHeader';
 
 export const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
     ({ className, ...props }, ref) => (
-        <h3 ref={ref} className={cn('font-semibold leading-none tracking-tight text-foreground', className)} {...props} />
+        <h3 ref={ref} className={cn('text-xl font-bold leading-none tracking-tight text-foreground uppercase', className)} {...props} />
     )
 );
 CardTitle.displayName = 'CardTitle';
 
 export const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-    ({ className, ...props }, ref) => <p ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
+    ({ className, ...props }, ref) => <p ref={ref} className={cn('text-sm text-neutral-500 font-normal leading-relaxed', className)} {...props} />
 );
 CardDescription.displayName = 'CardDescription';
 
 export const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-    ({ className, ...props }, ref) => <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
+    ({ className, ...props }, ref) => <div ref={ref} className={cn('p-6 pt-2', className)} {...props} />
 );
 CardContent.displayName = 'CardContent';
 
 export const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-    ({ className, ...props }, ref) => <div ref={ref} className={cn('flex items-center p-6 pt-0', className)} {...props} />
+    ({ className, ...props }, ref) => <div ref={ref} className={cn('flex items-center p-6 bg-secondary/30 border-t border-black', className)} {...props} />
 );
 CardFooter.displayName = 'CardFooter';
 
@@ -96,16 +94,19 @@ CardFooter.displayName = 'CardFooter';
    BADGE
 ───────────────────────────────────────── */
 const badgeVariants = cva(
-    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors',
+    'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-colors',
     {
         variants: {
             variant: {
-                default: 'bg-primary/10 text-primary border border-primary/20',
-                success: 'bg-green-500/10 text-green-500 border border-green-500/20',
-                warning: 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20',
-                destructive: 'bg-red-500/10 text-red-500 border border-red-500/20',
-                outline: 'border border-input text-foreground',
-                secondary: 'bg-secondary text-secondary-foreground',
+                default: 'bg-[#d0e8ff] text-neutral-700',
+                success: 'bg-[#e4f2e6] text-neutral-700',
+                warning: 'bg-[#fdf2d9] text-neutral-700',
+                destructive: 'bg-[#fad9d9] text-neutral-700',
+                outline: 'border border-border/20 text-neutral-700 bg-white',
+                secondary: 'bg-[#f3dec1] text-neutral-700',
+                eth: 'bg-[#fad9d9] text-neutral-700',
+                cowork: 'bg-[#f3dec1] text-neutral-700',
+                conf: 'bg-[#d0e8ff] text-neutral-700',
             },
         },
         defaultVariants: { variant: 'default' },
@@ -118,9 +119,7 @@ export function Badge({ className, variant, ...props }: BadgeProps) {
     return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
 
-/* ─────────────────────────────────────────
-   PROGRESS
-───────────────────────────────────────── */
+
 export const Progress = React.forwardRef<
     React.ElementRef<typeof ProgressPrimitive.Root>,
     React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & { indicatorClassName?: string }

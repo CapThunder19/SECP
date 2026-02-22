@@ -14,11 +14,11 @@ function RainbowWithTheme({ children }: { children: React.ReactNode }) {
     const { resolvedTheme } = useTheme();
     return (
         <RainbowKitProvider theme={resolvedTheme === 'light' ? lightTheme({
-            accentColor: '#6366f1',
+            accentColor: '#000000',
             accentColorForeground: 'white',
             borderRadius: 'large',
         }) : darkTheme({
-            accentColor: '#6366f1',
+            accentColor: '#000000',
             accentColorForeground: 'white',
             borderRadius: 'large',
             overlayBlur: 'small',
@@ -32,8 +32,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
+            defaultTheme="system"
+            enableSystem={true}
             disableTransitionOnChange={false}
             storageKey="secp-theme"
         >

@@ -8,8 +8,10 @@ import { useCollateralValue, useDebt } from '@/hooks/useProtocolData';
 import {
     TrendingDown, Activity, Zap, RefreshCw, Shield, AlertTriangle,
     BarChart2, Flame, Check, ChevronRight, Lock, Shuffle, BarChart,
-    DollarSign, Database, ArrowRight,
+    DollarSign, Database, ArrowRight, Droplets
 } from 'lucide-react';
+import { Card, Button, Badge, MotionCard } from '@/components/ui';
+import Link from 'next/link';
 
 /* ── ABIs ──────────────────────────────────────── */
 const ORACLE_ABI = [
@@ -60,23 +62,15 @@ function toPts(data: number[], W: number, H: number): [number, number][] {
 function PriceChart({ sets, crashed }: { sets: { key: string; data: number[]; color: string }[]; crashed: boolean }) {
     const W = 800, H = 200;
     return (
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 200 }}>
-            <defs>
-                {[['g-g', '#22c55e'], ['g-a', '#f59e0b'], ['g-i', '#6366f1']].map(([id, c]) => (
-                    <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={c} stopOpacity="0.22" /><stop offset="100%" stopColor={c} stopOpacity="0.02" />
-                    </linearGradient>
-                ))}
-            </defs>
-            {[0.25, 0.5, 0.75].map(r => <line key={r} x1="0" y1={r * H} x2={W} y2={r * H} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />)}
-            {crashed && <rect x="0" y="0" width={W} height={H} fill="rgba(239,68,68,0.05)" rx="8" />}
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full bg-[#fcfaf7] rounded-xl border-2 border-black" style={{ height: 200 }}>
+            {[0.25, 0.5, 0.75].map(r => <line key={r} x1="0" y1={r * H} x2={W} y2={r * H} stroke="rgba(0,0,0,0.05)" strokeWidth="1" />)}
+            {crashed && <rect x="0" y="0" width={W} height={H} fill="rgba(239,68,68,0.05)" />}
             {sets.map(({ key, data, color }, i) => {
-                const g = ['url(#g-g)', 'url(#g-a)', 'url(#g-i)'][i];
                 const pts = toPts(data, W, H);
-                return (<g key={key}><path d={area(pts, H)} fill={g} /><path d={smooth(pts)} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" /></g>);
+                return (<g key={key}><path d={smooth(pts)} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" /></g>);
             })}
-            {sets.map(({ key, data, color }) => { const pts = toPts(data, W, H); const [lx, ly] = pts[pts.length - 1]; return <g key={`d-${key}`}><circle cx={lx} cy={ly} r="5" fill={color} opacity="0.35" /><circle cx={lx} cy={ly} r="3" fill={color} /></g>; })}
-            {['−40m', '−30m', '−20m', '−10m', 'Now'].map((l, i, a) => <text key={l} x={(i / (a.length - 1)) * W} y={H - 1} textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="9">{l}</text>)}
+            {sets.map(({ key, data, color }) => { const pts = toPts(data, W, H); const [lx, ly] = pts[pts.length - 1]; return <g key={`d-${key}`}><circle cx={lx} cy={ly} r="6" fill="black" /><circle cx={lx} cy={ly} r="4" fill={color} /></g>; })}
+            {['−40m', '−30m', '−20m', '−10m', 'Now'].map((l, i, a) => <text key={l} x={(i / (a.length - 1)) * W} y={H - 5} textAnchor="middle" fill="black" fontSize="10" fontWeight="900" className="uppercase tracking-widest">{l}</text>)}
         </svg>
     );
 }
@@ -147,38 +141,23 @@ interface ComponentNodeProps {
     arrow?: boolean;
 }
 function ComponentNode({ name, label, status, color, desc, icon: Icon, arrow }: ComponentNodeProps) {
-    const bg = status === 'idle' ? 'rgba(255,255,255,0.03)' : `${color}15`;
-    const border = status === 'idle' ? 'rgba(255,255,255,0.08)' : `${color}40`;
-    const pulse = status === 'processing' || status === 'alert';
+    const active = status !== 'idle';
     return (
-        <div className="flex items-center gap-2">
-            <div className="flex-1 rounded-xl p-3 transition-all duration-500 relative"
-                style={{ background: bg, border: `1px solid ${border}` }}>
-                {pulse && (
-                    <div className="absolute inset-0 rounded-xl opacity-30 animate-pulse"
-                        style={{ background: color }} />
-                )}
-                <div className="relative flex items-start gap-2">
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ background: `${color}20` }}>
-                        <Icon className="w-3.5 h-3.5" style={{ color }} />
+        <div className="flex items-center gap-4">
+            <div className={`flex-1 rounded-2xl p-4 transition-all duration-500 border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 ${active ? 'bg-white border-black' : 'bg-neutral-50 border-black/10 opacity-50'
+                }`}>
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-black bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                        <Icon className="w-5 h-5" style={{ color: active ? color : 'gray' }} />
                     </div>
                     <div>
-                        <p className="text-xs font-bold text-white leading-tight">{name}</p>
-                        <p className="text-xs mt-0.5" style={{ color: status === 'idle' ? '#6b6b8a' : color }}>{label}</p>
+                        <p className="text-sm font-black uppercase tracking-tighter">{name}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">{label}</p>
                     </div>
-                    {status === 'processing' && (
-                        <svg className="animate-spin w-3.5 h-3.5 ml-auto mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" style={{ color }}>
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                    )}
-                    {status === 'done' && <Check className="w-3.5 h-3.5 ml-auto mt-0.5 flex-shrink-0" style={{ color: '#22c55e' }} />}
-                    {status === 'alert' && <AlertTriangle className="w-3.5 h-3.5 ml-auto mt-0.5 flex-shrink-0 animate-bounce" style={{ color }} />}
                 </div>
-                {status !== 'idle' && <p className="text-xs mt-1.5 leading-relaxed relative" style={{ color: '#a1a1c4' }}>{desc}</p>}
+                {active && <p className="text-[10px] font-medium mt-3 text-neutral-500 leading-relaxed uppercase tracking-widest border-t border-black/5 pt-3">{desc}</p>}
             </div>
-            {arrow && <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: status === 'idle' ? '#3f3f5a' : '#6366f1' }} />}
+            {arrow && <ArrowRight className="w-6 h-6 border-2 border-black rounded-full p-1" />}
         </div>
     );
 }
@@ -356,26 +335,25 @@ export default function MarketPage() {
     const volColor = volDisplay > 70 ? '#ef4444' : volDisplay > 40 ? '#f59e0b' : '#22c55e';
 
     return (
-        <div className="space-y-6 max-w-6xl mx-auto">
+        <div className="space-y-12 max-w-6xl mx-auto">
 
             {/* Header */}
-            <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="border-b-2 border-black pb-8 flex items-center justify-between flex-wrap gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                        <TrendingDown className="w-7 h-7 text-red-400" /> Market Simulator
+                    <h1 className="text-6xl font-black uppercase tracking-tighter flex items-center gap-4">
+                        <TrendingDown className="w-12 h-12 text-[#ef4444]" /> Market
                     </h1>
-                    <p className="text-[#a1a1c4] mt-1 text-sm">
-                        See exactly how SECP protects you during a market crash — step by step.
+                    <p className="font-normal mt-1 text-neutral-500">
+                        Stress-test the SECP Protocol anti-liquidation shields.
                     </p>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
-                    style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#22c55e' }}>
-                    <Activity className="w-3.5 h-3.5" /> Live · Arbitrum Sepolia
-                </div>
+                <Badge variant="conf" className="px-6 py-2 uppercase font-black tracking-widest flex items-center gap-2">
+                    <Activity className="w-4 h-4" /> Live Simulator
+                </Badge>
             </div>
 
             {/* Price cards + volatility */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {[
                     { sym: 'mUSDC', live: pU, color: '#22c55e' },
                     { sym: 'mYLD', live: pY, color: '#f59e0b' },
@@ -383,80 +361,75 @@ export default function MarketPage() {
                 ].map(({ sym, live, color }) => {
                     const after = live * (1 - drop);
                     return (
-                        <div key={sym} className="glass-card p-4 transition-all duration-500"
-                            style={crashed ? { borderColor: 'rgba(239,68,68,0.3)' } : {}}>
-                            <p className="text-xs font-bold uppercase" style={{ color }}>{sym}</p>
-                            <p className={`text-xl font-bold mt-1 transition-all ${crashed ? 'text-red-400' : 'text-white'}`}>
+                        <Card key={sym} className="p-6 transition-all duration-500"
+                            style={crashed ? { borderColor: '#ef4444' } : {}}>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">{sym}</p>
+                            <p className={`text-3xl font-black tracking-tighter ${crashed ? 'text-red-500' : 'text-black'}`}>
                                 ${(crashed ? after : live).toFixed(4)}
                             </p>
                             {crashed && (
-                                <p className="text-xs text-red-400 flex items-center gap-1 mt-0.5">
-                                    <TrendingDown className="w-3 h-3" /> −{localDrop}% (${live.toFixed(4)})
-                                </p>
+                                <Badge variant="destructive" className="mt-3 text-[10px] font-black uppercase">
+                                    −{localDrop}% CRASH
+                                </Badge>
                             )}
-                        </div>
+                        </Card>
                     );
                 })}
 
-                <div className="glass-card p-4 transition-all duration-1000"
-                    style={{ background: `${volColor}10`, borderColor: `${volColor}30` }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: volColor }}>Volatility</p>
-                    <p className="text-xl font-bold text-white mt-1">{volDisplay}%</p>
-                    <div className="progress-track h-1.5 mt-2">
-                        <div className="progress-fill h-1.5 transition-all duration-1000"
-                            style={{ width: `${volDisplay}%`, background: volColor }} />
+                <Card className="p-6" style={{ background: volDisplay > 70 ? '#fef2f2' : 'white', borderColor: volDisplay > 70 ? '#ef4444' : 'black' }}>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">Volatility</p>
+                    <p className="text-3xl font-black text-black tracking-tighter">{volDisplay}%</p>
+                    <div className="h-4 bg-neutral-100 border-2 border-black rounded-full mt-3 overflow-hidden">
+                        <div className="h-full bg-black transition-all duration-1000" style={{ width: `${volDisplay}%` }} />
                     </div>
-                </div>
+                </Card>
             </div>
 
             {/* Chart */}
-            <div className="glass-card p-6 transition-all duration-500"
-                style={crashed ? { borderColor: 'rgba(239,68,68,0.25)', boxShadow: '0 0 40px rgba(239,68,68,0.08)' } : {}}>
-                <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold text-white flex items-center gap-2">
-                        <BarChart2 className="w-4 h-4 text-indigo-400" /> Token Price Chart
-                        {crashed && <span className="text-xs text-red-400 font-semibold animate-pulse ml-2">📉 CRASH ACTIVE</span>}
+            <Card className="p-8 group shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]"
+                style={crashed ? { borderColor: '#ef4444' } : {}}>
+                <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-3">
+                        <BarChart2 className="w-8 h-8" /> Price Feed
                     </h2>
                     <div className="flex items-center gap-4">
                         {[['mUSDC', '#22c55e'], ['mYLD', '#f59e0b'], ['mRWA', '#6366f1']].map(([k, c]) => (
-                            <div key={k} className="flex items-center gap-1.5">
-                                <div className="w-3 h-0.5 rounded" style={{ background: c }} />
-                                <span className="text-xs text-[#a1a1c4]">{k}</span>
+                            <div key={k} className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-black rounded-full" style={{ background: c }} />
+                                <span className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">{k}</span>
                             </div>
                         ))}
                     </div>
                 </div>
                 <PriceChart sets={chartSets} crashed={crashed} />
-            </div>
+            </Card>
 
             {/* ── Two-column layout: Crash Panel + Story ── */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
                 {/* Crash Controls (left, 2 cols) */}
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="glass-card p-5 space-y-4"
-                        style={crashed ? { borderColor: 'rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.04)' } : {}}>
+                    <Card className="p-8 space-y-8 bg-[#fcfaf7]"
+                        style={crashed ? { borderColor: '#ef4444', background: '#fef2f2' } : {}}>
 
-                        <div className="flex items-center gap-2">
-                            <Flame className="w-5 h-5 text-red-400" />
-                            <h2 className="font-bold text-white">Crash Simulator</h2>
-                            {onChainOk === true && <span className="text-xs px-2 py-0.5 rounded-full ml-auto" style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e' }}>⛓️ On-chain</span>}
-                            {onChainOk === false && <span className="text-xs px-2 py-0.5 rounded-full ml-auto" style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}>💻 Local</span>}
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center border-2 border-black bg-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
+                                <Flame className="w-6 h-6 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-black uppercase tracking-tight">Simulator</h2>
                         </div>
 
-                        <div>
-                            <p className="text-xs font-semibold text-[#a1a1c4] mb-2">Drop all prices by:</p>
-                            <div className="grid grid-cols-4 gap-2">
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Crash Intensity</label>
+                            <div className="grid grid-cols-2 gap-3">
                                 {CRASH_OPTS.map(p => (
                                     <button key={p} onClick={() => setIntensity(p)} disabled={crashState !== 'idle'}
-                                        className="py-2.5 rounded-lg font-bold text-xs transition-all"
-                                        style={{
-                                            background: intensity === p ? `rgba(239,68,68,${p / 150})` : 'rgba(255,255,255,0.04)',
-                                            border: `2px solid ${intensity === p ? '#ef4444' : 'rgba(255,255,255,0.08)'}`,
-                                            color: intensity === p ? '#fca5a5' : '#6b6b8a',
-                                        }}>
-                                        −{p}%<br />
-                                        <span style={{ fontSize: 9, fontWeight: 400 }}>{p <= 20 ? 'Mild' : p <= 40 ? 'Mod.' : p <= 60 ? 'Severe' : 'Critical'}</span>
+                                        className={`p-4 rounded-2xl border-2 transition-all shadow-[4px_4px_0px_0px_rgba(35,30,25,1)] active:shadow-none active:translate-x-1 active:translate-y-1 ${intensity === p ? 'bg-[#ffe8d0] text-black border-black' : 'bg-white text-black border-black hover:bg-[#fcfaf7]'
+                                            }`}>
+                                        <p className="font-extrabold text-xl tracking-tighter">−{p}%</p>
+                                        <p className={`text-[10px] font-extrabold uppercase tracking-widest ${intensity === p ? 'text-black/60' : 'text-neutral-400'}`}>
+                                            {p <= 20 ? 'MILD' : p <= 40 ? 'MOD.' : p <= 60 ? 'SEVERE' : 'CRITICAL'}
+                                        </p>
                                     </button>
                                 ))}
                             </div>
@@ -464,47 +437,48 @@ export default function MarketPage() {
 
                         {/* Quick preview */}
                         {crashState === 'idle' && hasPosition && debtN > 0 && (
-                            <div className="rounded-lg p-3 text-xs space-y-1"
-                                style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                                <p className="font-semibold text-red-300">Your position after −{intensity}% crash:</p>
-                                <div className="flex justify-between"><span className="text-[#a1a1c4]">Collateral value</span> <span className="text-red-400 font-semibold">${colN.toFixed(2)} → ${newCol.toFixed(2)}</span></div>
-                                <div className="flex justify-between"><span className="text-[#a1a1c4]">Health factor</span> <span className="font-semibold" style={{ color: newHF < 100 ? '#ef4444' : '#f59e0b' }}>{oldHF === Infinity ? '∞' : oldHF.toFixed(2)} → {newHF === Infinity ? '∞' : newHF.toFixed(2)}</span></div>
-                                <div className="flex justify-between"><span className="text-[#a1a1c4]">Mode</span> <span className="font-semibold" style={{ color: modeColor }}>{newMode}</span></div>
+                            <div className="rounded-2xl p-6 border-2 border-dashed border-black/20 bg-[var(--bg-warm-footer)]/20 space-y-3 font-black uppercase tracking-widest text-[10px]">
+                                <p className="text-[#ef4444] mb-2 font-black">Projected Impact:</p>
+                                <div className="flex justify-between">
+                                    <span className="text-neutral-500 font-normal">Collateral</span>
+                                    <span className="text-[#ef4444]">${colN.toFixed(2)} → ${newCol.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-neutral-500 font-normal">Health Factor</span>
+                                    <span className={newHF < 100 ? 'text-[#ef4444]' : 'text-amber-600'}>{oldHF === Infinity ? '∞' : oldHF.toFixed(2)} → {newHF === Infinity ? '∞' : newHF.toFixed(2)}</span>
+                                </div>
                             </div>
                         )}
 
-                        {txStatus && <p className="text-xs text-[#a1a1c4] bg-white/5 px-3 py-2 rounded-lg">{txStatus}</p>}
+                        {txStatus && <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 border-2 border-black p-4 rounded-xl bg-white">{txStatus}</p>}
 
-                        <button onClick={handleCrash} disabled={crashState !== 'idle'}
-                            className="w-full py-3 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all"
-                            style={crashState !== 'idle'
-                                ? { background: 'rgba(239,68,68,0.25)', opacity: 0.6, cursor: 'not-allowed' }
-                                : { background: 'linear-gradient(135deg,#dc2626,#991b1b)', boxShadow: '0 0 24px rgba(239,68,68,0.4)' }}>
-                            {crashing ? (
-                                <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Crashing…</>
-                            ) : crashed ? <><AlertTriangle className="w-4 h-4" /> Market Crashed</> : <><Flame className="w-4 h-4" /> Simulate −{intensity}% Crash</>}
-                        </button>
+                        <div className="space-y-4 pt-4">
+                            <Button onClick={handleCrash} disabled={crashState !== 'idle'}
+                                size="lg"
+                                className="w-full h-16 font-extrabold uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(35,30,25,1)] bg-[#e65555] hover:bg-[#d44444] border-2 border-black transition-all">
+                                {crashing ? '⚡ CRASHING…' : crashed ? '🔥 MARKET DOWN' : `🔥 CRASH MARKET −${intensity}%`}
+                            </Button>
 
-                        {crashState !== 'idle' && (
-                            <button onClick={handleReset} disabled={crashState === 'resetting'}
-                                className="w-full py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
-                                style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', color: '#86efac' }}>
-                                <RefreshCw className="w-4 h-4" /> Reset Market
-                            </button>
-                        )}
-                    </div>
+                            {crashState !== 'idle' && (
+                                <Button onClick={handleReset} disabled={crashState === 'resetting'}
+                                    variant="outline"
+                                    size="lg"
+                                    className="w-full h-16 font-black uppercase tracking-widest border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)]">
+                                    <RefreshCw className="w-5 h-5 mr-2" /> RECOVERY MODE
+                                </Button>
+                            )}
+                        </div>
+                    </Card>
 
                     {/* Protocol component status */}
                     {(crashing || crashed) && (
-                        <div className="glass-card p-5 space-y-2">
-                            <p className="text-xs font-bold uppercase tracking-wider text-[#6b6b8a] mb-3">Protocol Response</p>
-                            <ComponentNode name="MockOracle" icon={Database} color="#ef4444" label="Prices updated" status={cmpStatus('MockOracle')} desc="Broadcasting new token prices to all contracts" arrow={false} />
-                            <ComponentNode name="CollateralManager" icon={BarChart} color="#f59e0b" label="Recalculating values" status={cmpStatus('CollateralManager')} desc="Recomputing collateral values and health factors" arrow={false} />
-                            <ComponentNode name="SmartVault" icon={Lock} color="#f59e0b" label="Checking positions" status={cmpStatus('SmartVault')} desc="Reviewing all active vault positions" arrow={false} />
-                            <ComponentNode name="AntiLiquidation" icon={Shield} color="#ef4444" label="Protection active" status={cmpStatus('AntiLiquidation')} desc="Freezing at-risk vaults instead of liquidating" arrow={false} />
-                            <ComponentNode name="YieldManager" icon={Zap} color="#6366f1" label="Diverting yield" status={cmpStatus('YieldManager')} desc="Redirecting earnings to repay loans automatically" arrow={false} />
-                            <ComponentNode name="LoanManager" icon={DollarSign} color="#22c55e" label="Loans protected" status={cmpStatus('LoanManager')} desc="Accepting automatic yield repayments" arrow={false} />
-                        </div>
+                        <Card className="p-8 space-y-6">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2">Protocol Response</p>
+                            <ComponentNode name="MockOracle" icon={Database} color="#ef4444" label="DEFIED" status={cmpStatus('MockOracle')} desc="Broadcasting new token prices to all contracts" arrow={false} />
+                            <ComponentNode name="CollateralManager" icon={BarChart} color="#f59e0b" label="SYNCING" status={cmpStatus('CollateralManager')} desc="Recomputing collateral values and health factors" arrow={false} />
+                            <ComponentNode name="SmartVault" icon={Lock} color="#f59e0b" label="SHIELDED" status={cmpStatus('SmartVault')} desc="Reviewing all active vault positions" arrow={false} />
+                            <ComponentNode name="AntiLiquidation" icon={Shield} color="#ef4444" label="ACTIVE" status={cmpStatus('AntiLiquidation')} desc="Freezing at-risk vaults instead of liquidating" arrow={false} />
+                        </Card>
                     )}
                 </div>
 
@@ -512,145 +486,120 @@ export default function MarketPage() {
                 <div className="lg:col-span-3">
                     {crashState === 'idle' ? (
                         /* Idle state — explain the system */
-                        <div className="glass-card p-6 h-full space-y-6">
-                            <h2 className="font-bold text-white text-lg">How SECP Protects You</h2>
-                            <p className="text-sm text-[#a1a1c4]">
-                                Press <strong className="text-red-400">Simulate Crash</strong> to see this play out live. Here's what will happen:
-                            </p>
-                            {STORY_STEPS.map((s, i) => (
-                                <div key={s.id} className="flex items-start gap-4">
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-black"
-                                        style={{ background: `${s.color}15`, color: s.color, border: `1px solid ${s.color}30` }}>
-                                        {i + 1}
+                        <Card className="p-12 h-full flex flex-col justify-center border-2 border-black bg-[#fcfaf7] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+                            <h2 className="text-4xl font-black uppercase tracking-tighter mb-8 bg-[var(--bg-warm-footer)]/40 px-4 py-2 rounded-xl inline-block w-fit">Anti-Liquidation Engine</h2>
+                            <div className="space-y-8">
+                                {STORY_STEPS.map((s, i) => (
+                                    <div key={s.id} className="flex items-start gap-6 group">
+                                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-lg font-black border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:-translate-y-1 transition-all"
+                                            style={{ color: s.color }}>
+                                            {i + 1}
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-lg uppercase tracking-tight">{s.title}</p>
+                                            <p className="text-xs font-normal text-neutral-500 mt-1 leading-relaxed">{s.plain}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-semibold text-white text-sm">{s.title}</p>
-                                        <p className="text-xs text-[#a1a1c4] mt-0.5 leading-relaxed">{s.plain}</p>
-                                    </div>
-                                </div>
-                            ))}
-                            <div className="rounded-xl p-4 text-xs text-[#a1a1c4] leading-relaxed"
-                                style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' }}>
-                                💡 <strong className="text-white">Unlike traditional DeFi</strong> which immediately liquidates your position,
-                                SECP uses its Anti-Liquidation system to give you time to recover — protecting your collateral even during extreme market events.
+                                ))}
                             </div>
-                        </div>
+                            <div className="mt-12 rounded-2xl p-6 border-2 border-black bg-neutral-50 shadow-inner flex items-start gap-4">
+                                <Shield className="w-6 h-6 text-black flex-shrink-0" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500 leading-relaxed">
+                                    💡 Unlike traditional DeFi which immediately liquidates your position, SECP uses its Anti-Liquidation system to give you time to recover — protecting your collateral even during extreme market events.
+                                </p>
+                            </div>
+                        </Card>
                     ) : (
                         /* Active crash — animated story */
-                        <div className="space-y-3">
+                        <div className="space-y-6">
                             {STORY_STEPS.map((s, i) => {
                                 const visible = activeStep >= i;
                                 const active = activeStep === i;
                                 const done = activeStep > i;
                                 return (
-                                    <div key={s.id}
-                                        className="glass-card p-5 transition-all duration-500"
+                                    <Card key={s.id}
+                                        className="p-8 transition-all duration-500"
                                         style={{
                                             opacity: visible ? 1 : 0,
-                                            transform: visible ? 'translateY(0)' : 'translateY(16px)',
-                                            borderColor: visible ? `${s.color}40` : 'rgba(255,255,255,0.08)',
-                                            background: visible ? `${s.color}08` : 'var(--bg-card)',
+                                            transform: visible ? 'translateY(0)' : 'translateY(24px)',
+                                            borderColor: visible ? 'black' : 'rgba(0,0,0,0.1)',
+                                            background: active ? '#fcfcf9' : 'white',
+                                            boxShadow: visible ? '8px 8px 0px 0px rgba(0,0,0,1)' : 'none'
                                         }}>
-                                        <div className="flex items-start gap-4">
+                                        <div className="flex items-start gap-6">
                                             {/* Step number / icon */}
-                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                                                style={{ background: `${s.color}20`, border: `1px solid ${s.color}40` }}>
+                                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                                style={{ color: s.color }}>
                                                 {done
-                                                    ? <Check className="w-5 h-5" style={{ color: '#22c55e' }} />
+                                                    ? <Check className="w-6 h-6 text-green-500" />
                                                     : active
-                                                        ? <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24" style={{ color: s.color }}><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                                                        : <s.icon className="w-5 h-5" style={{ color: s.color }} />
+                                                        ? <div className="spinner border-black border-t-transparent" />
+                                                        : <s.icon className="w-6 h-6" />
                                                 }
                                             </div>
 
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-3 flex-wrap">
-                                                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: s.color }}>
-                                                        Step {i + 1}
-                                                    </span>
-                                                    <span className="text-xs px-2 py-0.5 rounded font-mono" style={{ background: `${s.color}15`, color: s.color }}>
-                                                        {s.contract}
-                                                    </span>
-                                                    {active && <span className="text-xs font-semibold animate-pulse" style={{ color: s.color }}>● RUNNING</span>}
-                                                    {done && <span className="text-xs font-semibold text-green-400">✓ DONE</span>}
+                                                <div className="flex items-center gap-3 flex-wrap mb-2">
+                                                    <Badge variant="conf" className="text-[10px] font-black uppercase">STEP {i + 1}</Badge>
+                                                    <Badge variant="outline" className="text-[10px] font-black uppercase border-black">{s.contract}</Badge>
+                                                    {active && <span className="text-[10px] font-black uppercase tracking-widest text-red-500 animate-pulse">● EXECUTING</span>}
+                                                    {done && <span className="text-[10px] font-black uppercase tracking-widest text-green-500">✓ SECURED</span>}
                                                 </div>
 
-                                                <p className="font-bold text-white mt-1">{s.title}</p>
+                                                <p className="text-xl font-black uppercase tracking-tighter text-black">{s.title}</p>
+                                                <p className="text-xs font-medium text-neutral-500 mt-2 leading-relaxed uppercase tracking-widest">{s.plain}</p>
 
-                                                {/* Plain English */}
-                                                <p className="text-sm text-[#a1a1c4] mt-1 leading-relaxed">{s.plain}</p>
-
-                                                {/* Technical detail (show when visible) */}
+                                                {/* Technical detail */}
                                                 {visible && (
-                                                    <div className="mt-2 rounded-lg px-3 py-2 font-mono text-xs"
-                                                        style={{ background: 'rgba(0,0,0,0.3)', color: '#818cf8' }}>
+                                                    <div className="mt-4 rounded-xl px-4 py-3 bg-neutral-50 border-2 border-black/5 font-mono text-[10px] text-neutral-400 break-all">
                                                         {s.technical}
                                                     </div>
                                                 )}
 
                                                 {/* Specific metrics for relevant steps */}
                                                 {visible && s.id === 'health' && hasPosition && debtN > 0 && (
-                                                    <div className="mt-2 grid grid-cols-2 gap-2">
-                                                        <div className="rounded-lg p-2 text-xs" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                                                            <p className="text-[#6b6b8a]">Old HF</p>
-                                                            <p className="font-bold text-white">{oldHF === Infinity ? '∞' : oldHF.toFixed(2)}</p>
+                                                    <div className="mt-4 grid grid-cols-2 gap-4">
+                                                        <div className="rounded-xl p-4 border-2 border-black bg-white">
+                                                            <p className="text-[10px] font-black uppercase text-neutral-400">OLD HF</p>
+                                                            <p className="text-xl font-black">{oldHF === Infinity ? '∞' : oldHF.toFixed(2)}</p>
                                                         </div>
-                                                        <div className="rounded-lg p-2 text-xs" style={{ background: 'rgba(239,68,68,0.1)' }}>
-                                                            <p className="text-[#6b6b8a]">New HF</p>
-                                                            <p className="font-bold text-red-400">{newHF === Infinity ? '∞' : newHF.toFixed(2)}</p>
+                                                        <div className="rounded-xl p-4 border-2 border-red-500 bg-red-50">
+                                                            <p className="text-[10px] font-black uppercase text-red-400">NEW HF</p>
+                                                            <p className="text-xl font-black text-red-600">{newHF === Infinity ? '∞' : newHF.toFixed(2)}</p>
                                                         </div>
-                                                    </div>
-                                                )}
-
-                                                {visible && s.id === 'mode' && (
-                                                    <div className="mt-2 flex items-center gap-3 text-sm">
-                                                        <span className="text-[#6b6b8a] text-xs">New mode:</span>
-                                                        <span className="px-3 py-1 rounded-full text-xs font-bold"
-                                                            style={{ background: `${modeColor}20`, color: modeColor, border: `1px solid ${modeColor}40` }}>
-                                                            {newMode === 'Freeze' ? '🔴' : newMode === 'Conservative' ? '🟡' : '🟢'} {newMode}
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                {visible && s.id === 'protect' && (
-                                                    <div className="mt-2 rounded-lg p-3 text-xs space-y-1"
-                                                        style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}>
-                                                        <p className="text-indigo-300 font-semibold">✅ Your collateral is safe. No forced liquidation.</p>
-                                                        <p className="text-[#a1a1c4]">Yield earnings are being automatically used to pay down your loan, buying time for market recovery.</p>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
-                                    </div>
+                                    </Card>
                                 );
                             })}
 
                             {/* Final summary */}
                             {crashed && activeStep >= STORY_STEPS.length - 1 && (
-                                <div className="glass-card p-5"
-                                    style={{ borderColor: 'rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.06)' }}>
-                                    <p className="font-bold text-white mb-2 flex items-center gap-2">
-                                        <Shield className="w-4 h-4 text-indigo-400" /> SECP Protection Summary
+                                <Card className="p-8 border-2 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+                                    <p className="text-2xl font-black uppercase tracking-tighter mb-6 flex items-center gap-3">
+                                        <Shield className="w-8 h-8" /> Protection Active
                                     </p>
-                                    <div className="grid grid-cols-2 gap-3 text-xs">
-                                        <div className="flex items-start gap-2">
-                                            <Check className="w-3.5 h-3.5 text-green-400 flex-shrink-0 mt-0.5" />
-                                            <span className="text-[#a1a1c4]">No immediate liquidation — slow repayment instead</span>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <Check className="w-3.5 h-3.5 text-green-400 flex-shrink-0 mt-0.5" />
-                                            <span className="text-[#a1a1c4]">Vault frozen to prevent further exposure</span>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <Check className="w-3.5 h-3.5 text-green-400 flex-shrink-0 mt-0.5" />
-                                            <span className="text-[#a1a1c4]">Yield automatically repays debt over time</span>
-                                        </div>
-                                        <div className="flex items-start gap-2">
-                                            <Check className="w-3.5 h-3.5 text-green-400 flex-shrink-0 mt-0.5" />
-                                            <span className="text-[#a1a1c4]">Borrower score preserved — not penalized for crash</span>
-                                        </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {[
+                                            'Zero Liquidation Penalty',
+                                            'Vault Frozen for Safety',
+                                            'Automatic Yield Repayment',
+                                            'Borrower Score Preserved'
+                                        ].map((item, i) => (
+                                            <div key={i} className="flex items-center gap-3 p-4 border-2 border-black rounded-xl bg-neutral-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+                                                <Check className="w-4 h-4 text-green-500" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">{item}</span>
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
+                                    <div className="mt-8 border-t-2 border-black pt-8">
+                                        <Button className="w-full h-16 font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]" asChild>
+                                            <Link href="/dashboard">RETURN TO DASHBOARD</Link>
+                                        </Button>
+                                    </div>
+                                </Card>
                             )}
                         </div>
                     )}

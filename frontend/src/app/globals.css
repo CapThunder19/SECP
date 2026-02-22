@@ -6,87 +6,72 @@
    LIGHT THEME (default)
 ═══════════════════════════════════════════════ */
 :root {
-  /* shadcn HSL tokens */
-  --background: 220 33% 98%;
-  --foreground: 224 71% 4%;
+  --background: 0 0% 98%;
+  --foreground: 20 10% 15%;
+  /* Softer Black */
   --card: 0 0% 100%;
-  --card-foreground: 224 71% 4%;
+  --card-foreground: 20 10% 15%;
   --popover: 0 0% 100%;
-  --popover-foreground: 224 71% 4%;
-  --primary: 239 84% 67%;
+  --popover-foreground: 20 10% 15%;
+  --primary: 24 85% 40%;
+  /* Reverted to the approved rich terracotta orange */
   --primary-foreground: 0 0% 100%;
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 220 9% 46%;
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 9% 46%;
-  --accent: 239 84% 67%;
-  --accent-foreground: 0 0% 100%;
+  --secondary: 20 20% 96%;
+  --secondary-foreground: 20 10% 15%;
+  --muted: 20 20% 96%;
+  --muted-foreground: 20 5% 45%;
+  --accent: 20 20% 96%;
+  --accent-foreground: 20 10% 15%;
   --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 239 84% 67%;
-  --chart-1: 142 71% 45%;
-  --chart-2: 38 92% 50%;
-  --chart-3: 239 84% 67%;
-  --radius: 0.75rem;
+  --destructive-foreground: 0 0% 98%;
+  --border: 20 10% 15%;
+  /* Softer Border */
+  --input: 20 10% 90%;
+  --ring: 20 10% 15%;
+  --radius: 1.25rem;
 
-  /* Custom semantic palette */
-  --bg-primary: #f0f4ff;
-  --bg-secondary: #e8edf8;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f5f7ff;
-  --border-color: rgba(0, 0, 0, 0.09);
-  --border-bright: rgba(0, 0, 0, 0.18);
-  --accent-hex: #6366f1;
-  --text-primary: #0f172a;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
-  --glow-color: rgba(99, 102, 241, 0.15);
-  --navbar-bg: rgba(255, 255, 255, 0.85);
-  --shadow-card: 0 2px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  /* Neobrutalist Warm Palette */
+  --bg-warm: #fcfaf7;
+  --bg-warm-footer: #f3dec1;
+  --bg-primary: var(--bg-warm);
+  --text-secondary: #777777;
+  /* Lighter weight text */
+
+  /* Neobrutalist custom shadows - softer black */
+  --shadow-card: 6px 6px 0px 0px rgba(35, 30, 25, 1);
+  --shadow-card-hover: 10px 10px 0px 0px rgba(35, 30, 25, 1);
+  --shadow-btn: 4px 4px 0px 0px rgba(35, 30, 25, 1);
 }
 
 /* ═══════════════════════════════════════════════
-   DARK THEME
+   DARK THEME (Minimal support, keeping it warm)
+   Note: User requested a conversion to light mode.
 ═══════════════════════════════════════════════ */
 .dark {
-  --background: 224 39% 7%;
-  --foreground: 210 40% 98%;
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222 47% 11%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 239 84% 67%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 217 33% 17%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;
-  --accent: 239 84% 67%;
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 5%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 5%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 65%;
+  --accent: 0 0% 15%;
   --accent-foreground: 0 0% 100%;
-  --destructive: 0 63% 31%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217 33% 17%;
-  --input: 217 33% 17%;
-  --ring: 239 84% 67%;
-  --chart-1: 142 71% 45%;
-  --chart-2: 38 92% 50%;
-  --chart-3: 239 84% 67%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 100%;
+  --input: 0 0% 20%;
+  --ring: 0 0% 100%;
 
-  --bg-primary: #0f0f1a;
-  --bg-secondary: #16162a;
-  --bg-card: #1c1c32;
-  --bg-card-hover: #22223d;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-bright: rgba(255, 255, 255, 0.15);
-  --accent-hex: #6366f1;
-  --text-primary: #f1f5f9;
-  --text-secondary: #a1a1c4;
-  --text-muted: #6b6b8a;
-  --glow-color: rgba(99, 102, 241, 0.25);
-  --navbar-bg: rgba(13, 13, 26, 0.88);
-  --shadow-card: 0 2px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  /* White shadows for dark mode neobrutalism */
+  --shadow-card: 6px 6px 0px 0px rgba(255, 255, 255, 1);
+  --shadow-card-hover: 10px 10px 0px 0px rgba(255, 255, 255, 1);
+  --shadow-btn: 4px 4px 0px 0px rgba(255, 255, 255, 1);
 }
 
 /* ═══════════════════════════════════════════════
@@ -95,14 +80,28 @@
 @layer base {
   * {
     box-sizing: border-box;
+    border-color: hsl(var(--border) / 0.1);
+    /* Fallback */
   }
 
   body {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+    background-color: var(--bg-warm);
+    color: var(--foreground);
     font-family: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
+    letter-spacing: -0.015em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply uppercase tracking-tight;
+    font-weight: 800;
+    color: hsl(var(--foreground));
   }
 
   /* Scrollbar */
@@ -116,36 +115,43 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--border-bright);
+    background: #000;
     border-radius: 6px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
   }
 
   /* Focus rings */
   *:focus-visible {
-    outline: 2px solid var(--accent-hex);
+    outline: 2px solid #000;
     outline-offset: 2px;
-    border-radius: 4px;
   }
 }
 
 /* ═══════════════════════════════════════════════
-   GLASS CARD — theme-aware
+   NEOBRUTALIST CARD — theme-aware
 ═══════════════════════════════════════════════ */
 .glass-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
+  background: hsl(var(--card));
+  border: 2px solid hsl(var(--border));
+  border-radius: var(--radius);
   box-shadow: var(--shadow-card);
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .glass-card:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-bright);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.neo-btn {
+  @apply inline-flex items-center justify-center rounded-xl border-2 border-[hsl(var(--border))] bg-[hsl(var(--card))] px-6 py-3 text-sm font-black uppercase tracking-tight transition-all;
+  box-shadow: var(--shadow-btn);
+}
+
+.neo-btn:hover {
+  @apply -translate-y-0.5;
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* Dark glass variant */
@@ -159,21 +165,20 @@
    GRADIENT TEXT
 ═══════════════════════════════════════════════ */
 .gradient-text {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: black;
+  font-weight: 900;
 }
 
 /* ═══════════════════════════════════════════════
    GLOW BUTTON
 ═══════════════════════════════════════════════ */
 .btn-glow {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  box-shadow: 0 0 24px rgba(99, 102, 241, 0.4), 0 4px 16px rgba(99, 102, 241, 0.2);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: black;
+  color: white;
+  border: 2px solid black;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
 }
 
 .btn-glow::after {
@@ -240,8 +245,7 @@
 }
 
 .progress-fill {
-  border-radius: 999px;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  background: black;
   transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -360,14 +364,4 @@
   will-change: opacity, transform;
 }
 
-/* ═══════════════════════════════════════════════
-   LIGHT MODE overrides for specific inline colors
-   (These override hardcoded hex values used in
-    inline styles throughout the app)
-═══════════════════════════════════════════════ */
-:root:not(.dark) {
-  /* Text colours rendered via inline style color: #a1a1c4 or #6b6b8a
-     are handled dynamically by the JS reading CSS vars.
-     These ensure that any remaining hardcoded semi-transparent
-     backgrounds look good in light mode. */
-}
+/* End of globals.css */
