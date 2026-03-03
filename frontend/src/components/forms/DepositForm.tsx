@@ -4,14 +4,9 @@ import { useState } from 'react';
 import { Card, Button, Input } from '../ui/Card';
 import { useDepositCollateral } from '@/hooks/useProtocolActions';
 import { useTokenBalance } from '@/hooks/useProtocolData';
-import { CONTRACTS } from '@/config/contracts';
+import { getContractsForChain } from '@/config/contracts';
 import { Check, AlertCircle, Info } from 'lucide-react';
-
-const TOKENS = [
-  { name: 'USDC', address: CONTRACTS.mockUSDC as `0x${string}`, symbol: 'mUSDC', weight: 90, color: 'border-green-400 bg-green-50 dark:bg-green-900/20' },
-  { name: 'Yield Token', address: CONTRACTS.mockYield as `0x${string}`, symbol: 'mYLD', weight: 80, color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' },
-  { name: 'RWA Token', address: CONTRACTS.mockRWA as `0x${string}`, symbol: 'mRWA', weight: 100, color: 'border-purple-400 bg-purple-50 dark:bg-purple-900/20' },
-];
+import { useChainId } from 'wagmi';
 
 function formatError(msg: string): string {
   if (!msg) return '';
@@ -24,6 +19,16 @@ function formatError(msg: string): string {
 }
 
 export function DepositForm() {
+  const chainId = useChainId();
+  const contracts = getContractsForChain(chainId);
+  
+  // Define tokens based on current chain - only 3 tokens
+  const TOKENS = [
+    { name: 'USDC', address: contracts.mockUSDC as `0x${string}`, symbol: 'mUSDC', weight: 90, color: 'border-green-400 bg-green-50 dark:bg-green-900/20' },
+    { name: 'Yield Token', address: contracts.mockYield as `0x${string}`, symbol: 'mYLD', weight: 80, color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' },
+    { name: 'RWA Token', address: contracts.mockRWA as `0x${string}`, symbol: 'mRWA', weight: 100, color: 'border-purple-400 bg-purple-50 dark:bg-purple-900/20' },
+  ];
+
   const [selectedToken, setSelectedToken] = useState(TOKENS[0]);
   const [amount, setAmount] = useState('');
   const { deposit, isPending, isSuccess, error, step } = useDepositCollateral();

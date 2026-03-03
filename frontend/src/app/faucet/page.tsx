@@ -2,47 +2,14 @@
 
 import { useFaucet } from '@/hooks/useProtocolActions';
 import { useTokenBalance } from '@/hooks/useProtocolData';
-import { CONTRACTS } from '@/config/contracts';
+import { getContractsForChain } from '@/config/contracts';
 import { Check, AlertCircle, Droplets } from 'lucide-react';
-import { useAccount } from 'wagmi';
+import { useAccount, useChainId } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-
-const TOKENS = [
-    {
-        name: 'Mock USDC',
-        address: CONTRACTS.mockUSDC as `0x${string}`,
-        symbol: 'mUSDC',
-        color: '#22c55e',
-        bg: 'rgba(34,197,94,0.08)',
-        border: 'rgba(34,197,94,0.2)',
-        desc: 'Stable collateral — 90% risk weight',
-        amount: '1,000',
-    },
-    {
-        name: 'Mock Yield Token',
-        address: CONTRACTS.mockYield as `0x${string}`,
-        symbol: 'mYLD',
-        color: '#f59e0b',
-        bg: 'rgba(245,158,11,0.08)',
-        border: 'rgba(245,158,11,0.2)',
-        desc: 'Yield-bearing collateral — 80% risk weight',
-        amount: '1,000',
-    },
-    {
-        name: 'Mock RWA Token',
-        address: CONTRACTS.mockRWA as `0x${string}`,
-        symbol: 'mRWA',
-        color: '#6366f1',
-        bg: 'rgba(99,102,241,0.08)',
-        border: 'rgba(99,102,241,0.2)',
-        desc: 'Real-World Asset collateral — 100% risk weight',
-        amount: '1,000',
-    },
-];
-
 import { Card, Button, Badge, MotionCard } from '@/components/ui';
+import { GasBalanceChecker } from '@/components/faucet/GasBalanceChecker';
 
-function FaucetCard({ token }: { token: typeof TOKENS[0] }) {
+function FaucetCard({ token }: { token: { name: string; address: `0x${string}`; symbol: string; color: string; bg: string; border: string; desc: string; amount: string } }) {
     const { claimFaucet, isPending, isSuccess, error } = useFaucet();
     const { balance, isLoading: balL } = useTokenBalance(token.address);
     const { isConnected } = useAccount();
@@ -50,9 +17,11 @@ function FaucetCard({ token }: { token: typeof TOKENS[0] }) {
     const errMsg = (error as any)?.message;
     const displayErr = errMsg?.includes('User rejected') || errMsg?.includes('User denied')
         ? 'Cancelled.'
-        : errMsg?.includes('base fee') || errMsg?.includes('underpriced')
-            ? 'Gas issue — retry.'
-            : errMsg?.slice(0, 80);
+        : errMsg?.includes('insufficient funds') || errMsg?.includes('not enough funds')
+            ? 'Not enough DEV for gas — get free tokens from faucet below ↓'
+            : errMsg?.includes('base fee') || errMsg?.includes('underpriced')
+                ? 'Gas issue — retry.'
+                : errMsg?.slice(0, 80);
 
     return (
         <Card className="p-8 flex flex-col gap-6" style={{ borderColor: 'black' }}>
@@ -123,6 +92,42 @@ function FaucetCard({ token }: { token: typeof TOKENS[0] }) {
 
 export default function FaucetPage() {
     const { isConnected } = useAccount();
+    const chainId = useChainId();
+    const contracts = getContractsForChain(chainId);
+
+    // Define tokens - only 3 core tokens
+    const TOKENS = [
+        {
+            name: 'Mock USDC',
+            address: contracts.mockUSDC as `0x${string}`,
+            symbol: 'mUSDC',
+            color: '#22c55e',
+            bg: 'rgba(34,197,94,0.08)',
+            border: 'rgba(34,197,94,0.2)',
+            desc: 'Stable collateral — 90% risk weight',
+            amount: '1,000',
+        },
+        {
+            name: 'Mock Yield Token',
+            address: contracts.mockYield as `0x${string}`,
+            symbol: 'mYLD',
+            color: '#f59e0b',
+            bg: 'rgba(245,158,11,0.08)',
+            border: 'rgba(245,158,11,0.2)',
+            desc: 'Yield-bearing collateral — 80% risk weight',
+            amount: '1,000',
+        },
+        {
+            name: 'Mock RWA Token',
+            address: contracts.mockRWA as `0x${string}`,
+            symbol: 'mRWA',
+            color: '#6366f1',
+            bg: 'rgba(99,102,241,0.08)',
+            border: 'rgba(99,102,241,0.2)',
+            desc: 'Real-World Asset collateral — 100% risk weight',
+            amount: '1,000',
+        },
+    ];
 
     return (
         <div className="max-w-4xl mx-auto space-y-16">
@@ -145,9 +150,12 @@ export default function FaucetPage() {
                     <ConnectButton />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {TOKENS.map((t) => <FaucetCard key={t.address} token={t} />)}
-                </div>
+                <>
+                    <GasBalanceChecker />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {TOKENS.map((t) => <FaucetCard key={t.address} token={t} />)}
+                    </div>
+                </>
             )}
 
             {/* Info boxes */}
@@ -175,6 +183,9 @@ export default function FaucetPage() {
 
                 <Card className="p-8">
                     <h3 className="text-xl font-black uppercase tracking-tight mb-6">Need Gas?</h3>
+                    <p className="text-sm font-medium text-neutral-600 mb-4">
+                        You need <strong>DEV tokens</strong> (native currency) to pay for transaction gas fees on Moonbase Alpha.
+                    </p>
                     <div className="space-y-4">
                         {[
                             { name: 'Moonbase Faucet', url: 'https://faucet.moonbeam.network/' },

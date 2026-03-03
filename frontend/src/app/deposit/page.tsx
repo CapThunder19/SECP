@@ -3,16 +3,10 @@
 import { useState } from 'react';
 import { useDepositCollateral } from '@/hooks/useProtocolActions';
 import { useTokenBalance, useCollateralValue } from '@/hooks/useProtocolData';
-import { CONTRACTS } from '@/config/contracts';
+import { getContractsForChain } from '@/config/contracts';
 import { Check, AlertCircle, Info, ArrowDownToLine } from 'lucide-react';
-import { useAccount } from 'wagmi';
+import { useAccount, useChainId } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-
-const TOKENS = [
-    { name: 'Mock USDC', address: CONTRACTS.mockUSDC as `0x${string}`, symbol: 'mUSDC', weight: 90, color: '#22c55e', desc: 'Stablecoin — 90% risk weight' },
-    { name: 'Yield Token', address: CONTRACTS.mockYield as `0x${string}`, symbol: 'mYLD', weight: 80, color: '#f59e0b', desc: 'Yield-bearing — 80% risk weight' },
-    { name: 'RWA Token', address: CONTRACTS.mockRWA as `0x${string}`, symbol: 'mRWA', weight: 100, color: '#6366f1', desc: 'Real-World Asset — 100% risk weight' },
-];
 
 function formatErr(msg: string): string {
     if (!msg) return '';
@@ -27,6 +21,16 @@ import { Card, Button, Badge, MotionCard } from '@/components/ui';
 
 export default function DepositPage() {
     const { isConnected } = useAccount();
+    const chainId = useChainId();
+    const contracts = getContractsForChain(chainId);
+    
+    // Define tokens based on current chain - only 3 tokens
+    const TOKENS = [
+        { name: 'Mock USDC', address: contracts.mockUSDC as `0x${string}`, symbol: 'mUSDC', weight: 90, color: '#22c55e', desc: 'Stablecoin — 90% risk weight' },
+        { name: 'Yield Token', address: contracts.mockYield as `0x${string}`, symbol: 'mYLD', weight: 80, color: '#f59e0b', desc: 'Yield-bearing — 80% risk weight' },
+        { name: 'RWA Token', address: contracts.mockRWA as `0x${string}`, symbol: 'mRWA', weight: 100, color: '#6366f1', desc: 'Real-World Asset — 100% risk weight' },
+    ];
+    
     const [selected, setSelected] = useState(TOKENS[0]);
     const [amount, setAmount] = useState('');
     const { deposit, isPending, isSuccess, error, step } = useDepositCollateral();
@@ -56,8 +60,15 @@ export default function DepositPage() {
 
     const handleDeposit = async () => {
         if (!amount || amtN <= 0) return;
-        try { await deposit(selected.address, amount); setAmount(''); }
-        catch { /* error in hook state */ }
+        console.log('Deposit clicked:', { token: selected.address, amount });
+        try { 
+            await deposit(selected.address, amount); 
+            setAmount(''); 
+            console.log('Deposit successful');
+        }
+        catch (err) { 
+            console.error('Deposit error in handler:', err);
+        }
     };
 
     return (

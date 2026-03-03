@@ -1,13 +1,13 @@
 'use client';
 
-import { useAccount } from 'wagmi';
+import { useAccount, useChainId } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { motion } from 'framer-motion';
 import {
     useCollateralValue, useDebt, useHealthFactor,
     useLoanMode, useMaxBorrow, useBorrowerScore, useTokenBalance,
 } from '@/hooks/useProtocolData';
-import { CONTRACTS } from '@/config/contracts';
+import { getContractsForChain } from '@/config/contracts';
 import {
     Card, Badge, Progress, Stagger, StaggerItem, AnimatedNumber, MotionCard, Button,
 } from '@/components/ui';
@@ -88,6 +88,8 @@ const MODE_BADGE: Record<string, { variant: 'success' | 'warning' | 'destructive
 
 export default function DashboardPage() {
     const { isConnected } = useAccount();
+    const chainId = useChainId();
+    const contracts = getContractsForChain(chainId);
     const { value: collateral, isLoading: cl } = useCollateralValue();
     const { debt, isLoading: dl } = useDebt();
     const { healthFactor, rawHealthFactor, isSafe, isLoading: hl } = useHealthFactor();
@@ -228,9 +230,9 @@ export default function DashboardPage() {
                     </Link>
                 </div>
                 <div className="space-y-2">
-                    <TokenRow name="Mock USDC" symbol="mUSDC" address={CONTRACTS.mockUSDC as `0x${string}`} weight={90} color="#22c55e" i={0} />
-                    <TokenRow name="Mock Yield" symbol="mYLD" address={CONTRACTS.mockYield as `0x${string}`} weight={80} color="#f59e0b" i={1} />
-                    <TokenRow name="Mock RWA" symbol="mRWA" address={CONTRACTS.mockRWA as `0x${string}`} weight={100} color="#6366f1" i={2} />
+                    <TokenRow name="Mock USDC" symbol="mUSDC" address={contracts.mockUSDC as `0x${string}`} weight={90} color="#22c55e" i={0} />
+                    <TokenRow name="Mock Yield" symbol="mYLD" address={contracts.mockYield as `0x${string}`} weight={80} color="#f59e0b" i={1} />
+                    <TokenRow name="Mock RWA" symbol="mRWA" address={contracts.mockRWA as `0x${string}`} weight={100} color="#6366f1" i={2} />
                 </div>
             </Card>
 

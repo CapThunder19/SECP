@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useBorrow, useRepay } from '@/hooks/useProtocolActions';
 import { useDebt, useMaxBorrow, useTokenBalance } from '@/hooks/useProtocolData';
-import { CONTRACTS } from '@/config/contracts';
+import { getContractsForChain } from '@/config/contracts';
 import { Check, AlertCircle, Info, Landmark, RefreshCcw } from 'lucide-react';
-import { useAccount } from 'wagmi';
+import { useAccount, useChainId } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const DURATIONS = [7, 14, 30, 90, 180, 365];
@@ -25,6 +25,8 @@ import Link from 'next/link';
 
 export default function BorrowPage() {
     const { isConnected } = useAccount();
+    const chainId = useChainId();
+    const contracts = getContractsForChain(chainId);
 
     const [borrowAmt, setBorrowAmt] = useState('');
     const [duration, setDuration] = useState('30');
@@ -35,7 +37,7 @@ export default function BorrowPage() {
 
     const { maxBorrow, isLoading: maxL } = useMaxBorrow();
     const { debt, isLoading: debtL } = useDebt();
-    const { balance: usdcBal } = useTokenBalance(CONTRACTS.mockUSDC as `0x${string}`);
+    const { balance: usdcBal } = useTokenBalance(contracts.mockUSDC as `0x${string}`);
 
     if (!isConnected) {
         return (

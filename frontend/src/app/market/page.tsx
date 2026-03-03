@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { useReadContract, useWriteContract, usePublicClient, useAccount } from 'wagmi';
+import { useReadContract, useWriteContract, usePublicClient, useAccount, useChainId } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
-import { CONTRACTS } from '@/config/contracts';
+import { getContractsForChain } from '@/config/contracts';
 import { useCollateralValue, useDebt } from '@/hooks/useProtocolData';
 import {
     TrendingDown, Activity, Zap, RefreshCw, Shield, AlertTriangle,
@@ -21,8 +21,6 @@ const ORACLE_ABI = [
     { name: 'setPrice', type: 'function', inputs: [{ name: 'token', type: 'address' }, { name: 'price', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
     { name: 'setVolatility', type: 'function', inputs: [{ name: 'vol', type: 'uint256' }], outputs: [], stateMutability: 'nonpayable' },
 ] as const;
-
-const ORACLE = CONTRACTS.mockOracle as `0x${string}`;
 
 /* ── Gas helper ─────────────────────────────────── */
 async function safeGasPrice(pc: ReturnType<typeof usePublicClient>): Promise<bigint> {
@@ -186,10 +184,14 @@ export default function MarketPage() {
     const crashInterval = useRef<ReturnType<typeof setInterval> | null>(null);
     const stepTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+    const chainId = useChainId();
+    const contracts = getContractsForChain(chainId);
+    const ORACLE = contracts.mockOracle as `0x${string}`;
+
     /* Oracle reads */
-    const { data: pUD, refetch: rU } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [CONTRACTS.mockUSDC as `0x${string}`], query: { refetchInterval: 5000 } });
-    const { data: pYD, refetch: rY } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [CONTRACTS.mockYield as `0x${string}`], query: { refetchInterval: 5000 } });
-    const { data: pRD, refetch: rR } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [CONTRACTS.mockRWA as `0x${string}`], query: { refetchInterval: 5000 } });
+    const { data: pUD, refetch: rU } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [contracts.mockUSDC as `0x${string}`], query: { refetchInterval: 5000 } });
+    const { data: pYD, refetch: rY } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [contracts.mockYield as `0x${string}`], query: { refetchInterval: 5000 } });
+    const { data: pRD, refetch: rR } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [contracts.mockRWA as `0x${string}`], query: { refetchInterval: 5000 } });
     const { data: volD, refetch: rV } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'marketVolatility', query: { refetchInterval: 5000 } });
 
     const pU = pUD ? parseFloat(formatEther(pUD as bigint)) : BASE.mUSDC;
@@ -283,7 +285,7 @@ export default function MarketPage() {
                 const gasPrice = await safeGasPrice(publicClient);
                 const hash = await writeContractAsync({
                     address: ORACLE, abi: ORACLE_ABI, functionName: 'simulateCrash',
-                    args: [[CONTRACTS.mockUSDC, CONTRACTS.mockYield, CONTRACTS.mockRWA].map(a => a as `0x${string}`), BigInt(intensity)],
+                    args: [[contracts.mockUSDC, contracts.mockYield, contracts.mockRWA].map(a => a as `0x${string}`), BigInt(intensity)],
                     gas: 200_000n, gasPrice,
                 });
                 await publicClient!.waitForTransactionReceipt({ hash, confirmations: 1 });
@@ -312,7 +314,7 @@ export default function MarketPage() {
         if (isConnected && onChainOk) {
             try {
                 const gasPrice = await safeGasPrice(publicClient);
-                for (const [a, p] of [[CONTRACTS.mockUSDC, parseEther('1')], [CONTRACTS.mockYield, parseEther('1.05')], [CONTRACTS.mockRWA, parseEther('1.5')]] as const) {
+                for (const [a, p] of [[contracts.mockUSDC, parseEther('1')], [contracts.mockYield, parseEther('1.05')], [contracts.mockRWA, parseEther('1.5')]] as const) {
                     const h = await writeContractAsync({ address: ORACLE, abi: ORACLE_ABI, functionName: 'setPrice', args: [a as `0x${string}`, p], gas: 80_000n, gasPrice });
                     await publicClient!.waitForTransactionReceipt({ hash: h, confirmations: 1 });
                 }

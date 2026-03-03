@@ -117,21 +117,25 @@ async function getSafeGasPrice(publicClient: ReturnType<typeof usePublicClient>)
 // ───────────────────────────────────────────────
 
 export function useFaucet() {
-  const publicClient = usePublicClient();
+  const chainId = useChainId();
   const { data: hash, writeContract, isPending, error, reset } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
-  const claimFaucet = useCallback(async (tokenAddress: `0x${string}`) => {
+  const claimFaucet = useCallback(async (token: `0x${string}`) => {
     reset();
-    const gasPrice = await getSafeGasPrice(publicClient);
-    writeContract({
-      address: tokenAddress,
-      abi: FAUCET_ABI,
-      functionName: 'faucet',
-      gas: GAS_LIMITS.faucet,
-      gasPrice,
-    });
-  }, [writeContract, reset, publicClient]);
+    
+    // Add extra error context for debugging
+    try {
+      writeContract({
+        address: token,
+        abi: FAUCET_ABI,
+        functionName: 'faucet',
+      });
+    } catch (err: any) {
+      console.error('Faucet transaction error:', err);
+      throw err;
+    }
+  }, [writeContract, reset, chainId]);
 
   return { claimFaucet, hash, isPending: isPending || isConfirming, isSuccess, error };
 }
@@ -151,8 +155,12 @@ export function useDepositCollateral() {
   const [step, setStep] = useState<'idle' | 'approving' | 'depositing'>('idle');
 
   const deposit = useCallback(async (tokenAddress: `0x${string}`, amount: string) => {
-    if (!publicClient) throw new Error('No public client');
+    if (!publicClient) {
+      console.error('No public client available');
+      throw new Error('No public client');
+    }
     const contracts = getContractsForChain(chainId);
+    console.log('Starting deposit:', { tokenAddress, amount, smartVault: contracts.smartVault });
     setIsPending(true);
     setIsSuccess(false);
     setError(null);
@@ -160,37 +168,39 @@ export function useDepositCollateral() {
 
     try {
       const amountWei = parseEther(amount);
-      const gasPrice = await getSafeGasPrice(publicClient);
+      console.log('Amount in wei:', amountWei);
 
-      // Step 1: Approve
+      // Step 1: Approve - Let wallet estimate gas
+      console.log('Submitting approval transaction...');
       const approveTx = await writeContractAsync({
         address: tokenAddress,
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [contracts.smartVault as `0x${string}`, amountWei],
-        gas: GAS_LIMITS.approve,
-        gasPrice,
       });
+      console.log('Approval tx hash:', approveTx);
       await publicClient.waitForTransactionReceipt({ hash: approveTx, confirmations: 1 });
+      console.log('Approval confirmed');
 
       setStep('depositing');
-      const gasPrice2 = await getSafeGasPrice(publicClient);
 
-      // Step 2: Deposit
+      // Step 2: Deposit - Let wallet estimate gas
+      console.log('Submitting deposit transaction...');
       const depositTx = await writeContractAsync({
         address: contracts.smartVault as `0x${string}`,
         abi: SMART_VAULT_ABI,
         functionName: 'deposit',
         args: [tokenAddress, amountWei],
-        gas: GAS_LIMITS.deposit,
-        gasPrice: gasPrice2,
       });
+      console.log('Deposit tx hash:', depositTx);
       await publicClient.waitForTransactionReceipt({ hash: depositTx, confirmations: 1 });
+      console.log('Deposit confirmed');
 
       setHash(depositTx);
       setIsSuccess(true);
       setStep('idle');
     } catch (err: any) {
+      console.error('Deposit failed:', err);
       setError(err);
       setStep('idle');
       throw err;
@@ -215,16 +225,13 @@ export function useBorrow() {
   const borrow = useCallback(async (amount: string, durationDays: number) => {
     const contracts = getContractsForChain(chainId);
     reset();
-    const gasPrice = await getSafeGasPrice(publicClient);
     writeContract({
       address: contracts.loanManager as `0x${string}`,
       abi: LOAN_MANAGER_ABI,
       functionName: 'borrow',
       args: [parseEther(amount), BigInt(durationDays)],
-      gas: GAS_LIMITS.borrow,
-      gasPrice,
     });
-  }, [writeContract, reset, publicClient, chainId]);
+  }, [writeContract, reset, chainId]);
 
   return { borrow, hash, isPending: isPending || isConfirming, isSuccess, error };
 }
@@ -251,29 +258,22 @@ export function useRepay() {
 
     try {
       const amountWei = parseEther(amount);
-      const gasPrice = await getSafeGasPrice(publicClient);
 
-      // Step 1: Approve USDC spend
+      // Step 1: Approve USDC spend - Let wallet estimate gas
       const approveTx = await writeContractAsync({
         address: contracts.mockUSDC as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [contracts.loanManager as `0x${string}`, amountWei],
-        gas: GAS_LIMITS.approve,
-        gasPrice,
       });
       await publicClient.waitForTransactionReceipt({ hash: approveTx, confirmations: 1 });
 
-      const gasPrice2 = await getSafeGasPrice(publicClient);
-
-      // Step 2: Repay
+      // Step 2: Repay - Let wallet estimate gas
       const repayTx = await writeContractAsync({
         address: contracts.loanManager as `0x${string}`,
         abi: LOAN_MANAGER_ABI,
         functionName: 'repay',
         args: [amountWei],
-        gas: GAS_LIMITS.repay,
-        gasPrice: gasPrice2,
       });
       await publicClient.waitForTransactionReceipt({ hash: repayTx, confirmations: 1 });
 

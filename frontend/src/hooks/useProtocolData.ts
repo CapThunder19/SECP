@@ -87,7 +87,8 @@ export function useCollateralValue() {
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
-      refetchInterval: 10_000,
+      refetchInterval: 3_000,
+      refetchOnWindowFocus: true,
     },
   });
 
@@ -113,7 +114,8 @@ export function useDebt() {
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
-      refetchInterval: 10_000,
+      refetchInterval: 3_000,
+      refetchOnWindowFocus: true,
     },
   });
 
@@ -139,7 +141,8 @@ export function useHealthFactor() {
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
-      refetchInterval: 10_000,
+      refetchInterval: 3_000,
+      refetchOnWindowFocus: true,
     },
   });
 
@@ -176,7 +179,8 @@ export function useMaxBorrow() {
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
-      refetchInterval: 10_000,
+      refetchInterval: 3_000,
+      refetchOnWindowFocus: true,
     },
   });
 
@@ -200,7 +204,8 @@ export function useTokenBalance(tokenAddress: `0x${string}`) {
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
-      refetchInterval: 10_000,
+      refetchInterval: 3_000,
+      refetchOnWindowFocus: true,
     },
   });
 
@@ -226,7 +231,8 @@ export function useLoanMode() {
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
-      refetchInterval: 15_000,
+      refetchInterval: 3_000,
+      refetchOnWindowFocus: true,
     },
   });
 
@@ -256,6 +262,8 @@ export function useBorrowerScore() {
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
+      refetchInterval: 5_000,
+      refetchOnWindowFocus: true,
     },
   });
 

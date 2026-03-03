@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { Card, Button, Input } from '../ui/Card';
 import { useBorrow, useRepay } from '@/hooks/useProtocolActions';
 import { useDebt, useMaxBorrow, useTokenBalance } from '@/hooks/useProtocolData';
-import { CONTRACTS } from '@/config/contracts';
+import { getContractsForChain } from '@/config/contracts';
 import { Check, AlertCircle, Info } from 'lucide-react';
+import { useChainId } from 'wagmi';
 
 const DURATION_PRESETS = [7, 14, 30, 90, 180];
 
@@ -19,10 +20,10 @@ function formatError(msg: string): string {
 }
 
 // Repay sub-section
-function RepaySection({ debt }: { debt: string }) {
+function RepaySection({ debt, usdcAddress }: { debt: string; usdcAddress: `0x${string}` }) {
   const [repayAmount, setRepayAmount] = useState('');
   const { repay, isPending: repayPending, isSuccess: repaySuccess, error: repayError } = useRepay();
-  const { balance: usdcBalance } = useTokenBalance(CONTRACTS.mockUSDC as `0x${string}`);
+  const { balance: usdcBalance } = useTokenBalance(usdcAddress);
 
   const debtNum = parseFloat(debt);
   const repayNum = parseFloat(repayAmount || '0');
@@ -88,6 +89,8 @@ function RepaySection({ debt }: { debt: string }) {
 }
 
 export function BorrowForm() {
+  const chainId = useChainId();
+  const contracts = getContractsForChain(chainId);
   const [amount, setAmount] = useState('');
   const [duration, setDuration] = useState('30');
   const { borrow, isPending, isSuccess, error } = useBorrow();
@@ -270,7 +273,7 @@ export function BorrowForm() {
         )}
 
         {/* Repay Section */}
-        <RepaySection debt={currentDebt} />
+        <RepaySection debt={currentDebt} usdcAddress={contracts.mockUSDC as `0x${string}`} />
       </div>
     </Card>
   );

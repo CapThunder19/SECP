@@ -75,7 +75,11 @@ function TokenFaucetButton({ tokenAddress, tokenName, tokenSymbol, tokenColor, t
 
 function formatError(msg: string): string {
   if (msg.includes('User rejected') || msg.includes('User denied')) return 'Transaction cancelled.';
-  if (msg.includes('base fee') || msg.includes('gas')) return 'Gas estimate issue — MetaMask will retry automatically.';
+  if (msg.includes('insufficient funds') || msg.includes('not enough funds')) {
+    return 'Not enough DEV tokens for gas. Get free tokens from Moonbase Faucet above ↑';
+  }
+  if (msg.includes('base fee') || msg.includes('gas')) return 'Gas estimate issue — try again or adjust gas in MetaMask.';
+  if (msg.includes('execution reverted')) return 'Transaction reverted — contract may have restrictions.';
   if (msg.length > 120) return msg.slice(0, 120) + '…';
   return msg;
 }

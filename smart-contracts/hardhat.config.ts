@@ -57,12 +57,19 @@ export default defineConfig({
       accounts: [getPrivateKey()],
       chainId: 1000, // Polkadot Hub MAINNET - Use for final hackathon submission
     },
+    moonbaseAlpha: {
+      type: "http",
+      chainType: "l1",
+      url: "https://rpc.api.moonbase.moonbeam.network",
+      accounts: [getPrivateKey()],
+      chainId: 1287, // Moonbase Alpha TESTNET - Use for development/testing
+    },
     polkadotHubTestnet: {
       type: "http",
       chainType: "l1",
       url: process.env.POLKADOT_HUB_TESTNET_RPC_URL || "https://rpc.api.moonbase.moonbeam.network",
       accounts: [getPrivateKey()],
-      chainId: 1287, // Moonbase Alpha TESTNET - Use for development/testing
+      chainId: 1287, // Moonbase Alpha TESTNET (alias)
     },
   },
 });
