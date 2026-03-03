@@ -114,7 +114,7 @@ export default function DashboardPage() {
                 <div>
                     <h1 className="text-4xl font-black mb-3 uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>Connect Wallet</h1>
                     <p className="max-w-md mx-auto font-medium" style={{ color: 'var(--text-secondary)' }}>
-                        Connect to Arbitrum Sepolia to view your live position, health factor, and protocol stats.
+                        Connect to Moonbase Alpha to view your live position, health factor, and protocol stats.
                     </p>
                 </div>
                 <ConnectButton />
@@ -145,7 +145,7 @@ export default function DashboardPage() {
             >
                 <div>
                     <h1 className="text-5xl font-black uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
-                    <p className="font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>Your live position on Arbitrum Sepolia</p>
+                    <p className="font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>Your live position on Moonbase Alpha (Polkadot)</p>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap">
                     <Badge variant="conf" className="px-6 py-2">

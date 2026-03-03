@@ -14,7 +14,7 @@ export function GasHelper() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-medium">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <span>Arbitrum Sepolia Tip: Gas fees on testnet are extremely low (~0.00001 ETH per tx)</span>
+          <span>Moonbase Alpha Tip: Gas fees on testnet are extremely low (~0.0001 DEV per tx)</span>
         </div>
         <div className="flex items-center gap-1 ml-4">
           <button
@@ -45,25 +45,16 @@ export function GasHelper() {
           </ol>
           <p className="mt-1">
             <strong>Or:</strong> Select the <strong>"Aggressive"</strong> preset in MetaMask for automatic gas adjustment.
-            Gas is negligible on Arbitrum Sepolia — testnet ETH from the{' '}
+            Gas is negligible on Moonbase Alpha — testnet DEV tokens from the{' '}
             <a
-              href="https://www.alchemy.com/faucets/arbitrum-sepolia"
+              href="https://faucet.moonbeam.network/"
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:no-underline"
             >
-              Alchemy faucet
-            </a>{' '}
-            or{' '}
-            <a
-              href="https://faucet.triangleplatform.com/arbitrum/sepolia"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:no-underline"
-            >
-              Triangle faucet
+              Moonbase Faucet
             </a>
-            {' '}covers thousands of transactions.
+            {' '}cover thousands of transactions.
           </p>
         </div>
       )}

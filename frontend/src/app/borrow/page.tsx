@@ -46,7 +46,7 @@ export default function BorrowPage() {
                 <div>
                     <h1 className="text-4xl font-black mb-3 uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>Connect Wallet</h1>
                     <p className="max-w-md mx-auto font-medium text-neutral-500">
-                        Connect to Arbitrum Sepolia to borrow USDC against your collateral.
+                        Connect to Moonbase Alpha (Polkadot testnet) to borrow USDC against your collateral.
                     </p>
                 </div>
                 <ConnectButton />

@@ -9,8 +9,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'sw
 
 export const metadata: Metadata = {
   title: { default: 'SECP Protocol — DeFi Lending Reimagined', template: '%s | SECP Protocol' },
-  description: 'Deposit multi-asset collateral, borrow USDC, and let the protocol automatically protect your position during market volatility.',
-  keywords: ['DeFi', 'lending', 'USDC', 'collateral', 'Arbitrum', 'anti-liquidation'],
+  description: 'Deposit multi-asset collateral including DOT and WBTC, borrow USDC, and let AI-powered risk prediction protect your position on Polkadot.',
+  keywords: ['DeFi', 'lending', 'Polkadot', 'Moonbeam', 'DOT', 'WBTC', 'AI', 'cross-chain'],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -29,13 +29,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Shield className="w-5 h-5" /> SECP PROTOCOL
                 </div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-secondary)' }}>
-                  Built on Arbitrum Sepolia Testnet · Chain ID: 421614
+                  Built on Moonbase Alpha (Polkadot) · Chain ID: 1287
                 </p>
-                <a href="https://sepolia.arbiscan.io" target="_blank" rel="noopener noreferrer"
+                <a href="https://moonbase.moonscan.io" target="_blank" rel="noopener noreferrer"
                   className="text-[10px] font-black uppercase tracking-widest rounded-lg px-4 py-2 transition-all border-2 hover:bg-[var(--ink)] hover:text-[var(--surface)]"
                   style={{ borderColor: 'var(--border-strong)', color: 'hsl(var(--foreground))' }}
                 >
-                  Arbiscan Explorer
+                  Moonscan Explorer
                 </a>
                 <p className="text-[10px] font-medium mt-4 italic" style={{ color: 'var(--text-secondary)' }}>
                   SECP Protocol © 2026 · Anti-Liquidation Reimagined

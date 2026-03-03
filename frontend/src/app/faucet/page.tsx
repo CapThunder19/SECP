@@ -177,15 +177,16 @@ export default function FaucetPage() {
                     <h3 className="text-xl font-black uppercase tracking-tight mb-6">Need Gas?</h3>
                     <div className="space-y-4">
                         {[
-                            { name: 'Alchemy', url: 'https://www.alchemy.com/faucets/arbitrum-sepolia' },
-                            { name: 'Triangle', url: 'https://faucet.triangleplatform.com/arbitrum/sepolia' },
-                            { name: 'QuickNode', url: 'https://faucet.quicknode.com/arbitrum/sepolia' },
+                            { name: 'Moonbase Faucet', url: 'https://faucet.moonbeam.network/' },
                         ].map(({ name, url }) => (
                             <a key={url} href={url} target="_blank" rel="noopener noreferrer"
                                 className="flex items-center justify-between p-4 border-2 border-black rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none translate-x-0 hover:translate-x-[4px] hover:translate-y-[4px]">
-                                {name} Faucet <Droplets className="w-3 h-3" />
+                                {name} <Droplets className="w-3 h-3" />
                             </a>
                         ))}
+                        <p className="text-[10px] font-medium text-neutral-500 pt-2">
+                            Free DEV tokens from the Moonbase Alpha faucet — each drip covers thousands of transactions.
+                        </p>
                     </div>
                 </Card>
             </div>

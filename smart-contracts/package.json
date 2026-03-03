@@ -11,6 +11,10 @@
     "fund:arbitrum": "hardhat run scripts/fund.ts --network arbitrumSepolia",
     "interact:arbitrum": "hardhat run scripts/interact.ts --network arbitrumSepolia",
     "console:arbitrum": "hardhat console --network arbitrumSepolia",
+    "deploy:polkadot": "hardhat run scripts/deploy-polkadot.ts --network polkadotHubTestnet",
+    "setup:polkadot": "hardhat run scripts/setup-polkadot.ts --network polkadotHubTestnet",
+    "deploy:polkadot-mainnet": "hardhat run scripts/deploy-polkadot.ts --network polkadotHub",
+    "setup:polkadot-mainnet": "hardhat run scripts/setup-polkadot.ts --network polkadotHub",
     "deploy:local": "hardhat run scripts/deploy.ts --network hardhat",
     "interact:local": "hardhat run scripts/interact.ts --network hardhat",
     "node": "hardhat node"

@@ -2,7 +2,7 @@ import { PublicClient } from 'viem';
 
 /**
  * Get gas parameters with a buffer to prevent "max fee per gas less than block base fee" errors
- * Arbitrum Sepolia's base fee changes rapidly, so we add a 20% buffer
+ * Moonbase Alpha's base fee changes rapidly, so we add a 20% buffer
  */
 export async function getBufferedGasParams(publicClient: PublicClient) {
   try {
@@ -18,7 +18,7 @@ export async function getBufferedGasParams(publicClient: PublicClient) {
     // Add 20% buffer to base fee
     const bufferedBaseFee = (baseFee * BigInt(120)) / BigInt(100);
 
-    // Set max priority fee (tip for validators) - keep it minimal for Arbitrum
+    // Set max priority fee (tip for validators) - keep it minimal for Moonbase
     const maxPriorityFeePerGas = BigInt(1000); // Very small tip
 
     // Max fee = buffered base fee + priority fee

@@ -2,6 +2,8 @@
 pragma solidity ^0.8.20;
 
 import "./SmartVault.sol";
+import "../interfaces/IAIRiskPredictor.sol";
+import "../interfaces/IXCMBridge.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface IOracle {
@@ -19,9 +21,14 @@ contract CollateralManager is Ownable {
     SmartVault public vault;
     IOracle public oracle;
     ILoanManager public loanManager;
+    IAIRiskPredictor public aiPredictor;
+    IXCMBridge public xcmBridge;
 
     // Risk weights for different assets (100 = 100% safe, lower = riskier)
     mapping(address => uint256) public assetWeights;
+    
+    // Track cross-chain collateral by user
+    mapping(address => mapping(IXCMBridge.Chain => uint256)) public crossChainCollateral;
 
     // Adaptive modes
     enum Mode {
@@ -49,6 +56,22 @@ contract CollateralManager is Ownable {
         vault = SmartVault(_vault);
         oracle = IOracle(_oracle);
         loanManager = ILoanManager(_loanManager);
+        
+        // Initialize default risk weights for new tokens
+        // DOT: 85 (high quality L1)
+        // WBTC: 90 (highly liquid, blue chip)
+        // RWA: 80 (stable but less liquid)
+        // Default: 70 (conservative default)
+    }
+    
+    /// Set AI Risk Predictor address
+    function setAIPredictor(address _aiPredictor) external onlyOwner {
+        aiPredictor = IAIRiskPredictor(_aiPredictor);
+    }
+    
+    /// Set XCM Bridge address
+    function setXCMBridge(address _xcmBridge) external onlyOwner {
+        xcmBridge = IXCMBridge(_xcmBridge);
     }
 
     /// Set weight for an asset (example: RWA safer than ETH)
@@ -74,6 +97,62 @@ contract CollateralManager is Ownable {
             // Weighted risk-adjusted value: (amount * price) * (weight/100)
             totalValue += (amount * price * weight) / (1e18 * 100);
         }
+        
+        // Add cross-chain collateral if bridge is set
+        if (address(xcmBridge) != address(0)) {
+            totalValue += getCrossChainCollateralValue(user);
+        }
+    }
+    
+    /// 🌉 Get total cross-chain collateral value
+    function getCrossChainCollateralValue(address user) public view returns (uint256 totalValue) {
+        if (address(xcmBridge) == address(0)) return 0;
+        
+        // Sum collateral from all supported chains
+        for (uint i = 0; i < 5; i++) {
+            IXCMBridge.Chain chain = IXCMBridge.Chain(i);
+            uint256 amount = crossChainCollateral[user][chain];
+            if (amount > 0) {
+                // Apply cross-chain discount factor (95% to account for bridge risk)
+                totalValue += (amount * 95) / 100;
+            }
+        }
+    }
+    
+    /// 🔗 Update cross-chain collateral balance
+    function updateCrossChainCollateral(
+        address user, 
+        IXCMBridge.Chain chain, 
+        uint256 amount
+    ) external {
+        require(msg.sender == address(xcmBridge) || msg.sender == owner(), "Only bridge or owner");
+        crossChainCollateral[user][chain] = amount;
+    }
+    
+    /// 🎯 Calculate diversification score (0-100)
+    function getDiversificationScore(address user) public view returns (uint256) {
+        address[] memory tokens = vault.getUserTokens(user);
+        if (tokens.length == 0) return 0;
+        if (tokens.length == 1) return 30; // Single asset = low diversification
+        
+        uint256 totalValue = getTotalCollateralValue(user);
+        if (totalValue == 0) return 0;
+        
+        // Calculate concentration (higher = less diversified)
+        uint256 maxConcentration = 0;
+        for (uint256 i = 0; i < tokens.length; i++) {
+            uint256 amount = vault.getCollateral(user, tokens[i]);
+            uint256 price = oracle.getPrice(tokens[i]);
+            uint256 value = (amount * price) / 1e18;
+            uint256 concentration = (value * 100) / totalValue;
+            if (concentration > maxConcentration) {
+                maxConcentration = concentration;
+            }
+        }
+        
+        // Convert to diversification score (inverse of concentration)
+        // 100% in one asset = 0 score, evenly distributed = 100 score
+        return 100 - maxConcentration;
     }
 
     /// 💪 Calculate Health Factor
@@ -105,8 +184,8 @@ contract CollateralManager is Ownable {
         return healthFactor < 100; // Less than 100% = liquidation risk
     }
 
-    /// 🔄 AUTOMATIC MODE SWITCHING
-    /// Based on: Market volatility + Borrower reliability + Health Factor + Time
+    /// 🔄 AUTOMATIC MODE SWITCHING with AI integration
+    /// Based on: Market volatility + Borrower reliability + Health Factor + Time + AI Prediction
     function autoUpdateMode(address user) external {
         uint256 volatility = oracle.marketVolatility();
         bool isReliable = loanManager.isReliableBorrower(user);
@@ -115,20 +194,28 @@ contract CollateralManager is Ownable {
 
         Mode newMode;
         string memory reason;
+        
+        // Get AI risk prediction if available
+        IAIRiskPredictor.RiskLevel aiRisk = IAIRiskPredictor.RiskLevel.Low;
+        if (address(aiPredictor) != address(0)) {
+            uint256 diversification = getDiversificationScore(user);
+            aiRisk = aiPredictor.predictUserRisk(user, healthFactor, diversification);
+        }
 
         // 🔴 FREEZE MODE - Emergency protection
-        if (volatility > 80 || healthFactor < 100) {
+        if (volatility > 80 || healthFactor < 100 || aiRisk == IAIRiskPredictor.RiskLevel.Critical) {
             newMode = Mode.Freeze;
-            reason = "High volatility or liquidation risk";
+            reason = "High volatility, liquidation risk, or AI critical alert";
         }
         // 🟡 CONSERVATIVE MODE - Risk reduction
         else if (
             volatility > 50 ||
             healthFactor < SAFE_THRESHOLD ||
-            (!isReliable && loanDuration > 30)
+            (!isReliable && loanDuration > 30) ||
+            aiRisk == IAIRiskPredictor.RiskLevel.High
         ) {
             newMode = Mode.Conservative;
-            reason = "Medium risk detected";
+            reason = "Medium risk detected by market or AI analysis";
         }
         // 🟢 FLEXIBLE MODE - Normal operations
         else {

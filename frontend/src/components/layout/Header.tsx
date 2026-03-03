@@ -18,7 +18,7 @@ export function Header() {
                 SECP Protocol
               </h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Arbitrum Sepolia
+                Moonbase Alpha
               </p>
             </div>
           </div>

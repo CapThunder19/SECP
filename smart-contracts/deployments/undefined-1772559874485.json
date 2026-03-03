@@ -1,0 +1,21 @@
+{
+  "chainId": "1287",
+  "deployer": "0x06CAdb961aC800B4Bc11f0E5e7C7634810972536",
+  "timestamp": "2026-03-03T17:44:34.483Z",
+  "contracts": {
+    "MockUSDC": "0x2910009bb55f0f1efc4408f1b794600ac529bcc3",
+    "MockYield": "0x90c5f5af3086655d10e3daa70c97e8f605a333c8",
+    "MockRWA": "0xc500240db43ef946eb0fed6c2f3c80a2d5195a8e",
+    "MockDOT": "0xa0fa71cba7361205b0e0db428ec0c51f8d9937cd",
+    "MockWBTC": "0xbed7cf7901215030751c4e5c3ac36e6acc33d51e",
+    "MockOracle": "0x2431412258006a6f49b4f3361767427c3cbc3532",
+    "SmartVault": "0x9ac3a6ba0a9459994aa6c568ae19920138487fca",
+    "LoanManager": "0xcb29fec76ff9a4e7432b5f725b16aad190a0cc26",
+    "CollateralManager": "0xfd46da485e35732d802325d31534ba34d0335033",
+    "AntiLiquidation": "0xb0b8e5ef9eef4861998a2a4a0d73bc7ea86bee28",
+    "XCMBridge": "0x6a70042cbe0164b876a6df864b5f01e4142fe3f5",
+    "AIRiskPredictor": "0x7a3e5b12b80aa89026493d22187fb6923da85c46",
+    "CrossChainRebalancer": "0xfbf16e331ae416b7406e9a98017e8542bbf88582",
+    "YieldManager": "0xd9a390325db7f17db81cb1d69ed7fde6366c2690"
+  }
+}

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useWriteContract, useWaitForTransactionReceipt, usePublicClient } from 'wagmi';
-import { CONTRACTS } from '@/config/contracts';
+import { useWriteContract, useWaitForTransactionReceipt, usePublicClient, useChainId } from 'wagmi';
+import { getContractsForChain } from '@/config/contracts';
 import { parseEther } from 'viem';
 
 // ───────────────────────────────────────────────
@@ -76,22 +76,20 @@ const LOAN_MANAGER_ABI = [
 ] as const;
 
 // ───────────────────────────────────────────────
-// Gas price helper — DUAL FIX for Arbitrum Sepolia
+// Gas price helper — Moonbase Alpha EVM
 //
-// PROBLEM 1 (gas price): estimateFeesPerGas() and block.baseFeePerGas both
-//   include L1 calldata cost → produces values like 1-2 ETH/gas. Fixed by
-//   using eth_gasPrice (getGasPrice) which returns L2-only price.
+// PROBLEM 1 (gas price): estimateFeesPerGas() can return inflated values.
+//   We use getGasPrice() for accurate L2 pricing.
 //
 // PROBLEM 2 (gas limit): When a tx reverts during MetaMask's eth_estimateGas
-//   call, MetaMask falls back to Arbitrum's enormous block gas limit (can be
-//   billions of gas units). We MUST set explicit gas limits so MetaMask never
-//   uses that fallback.
+//   call, MetaMask may fall back to very high gas limits. We set explicit
+//   gas limits to prevent excessive estimates.
 //
 // MAX FEE per tx = gasLimit × gasPrice
-//   e.g. 300,000 gas × 500,000,000 wei = 0.00015 ETH ≈ $0.30
+//   e.g. 300,000 gas × 500,000,000 wei = 0.00015 DEV ≈ negligible
 // ───────────────────────────────────────────────
 
-// 0.5 gwei hard cap — Arbitrum Sepolia real price is 0.01-0.1 gwei
+// 0.5 gwei hard cap — Moonbase Alpha typical price is 0.01-0.1 gwei
 const MAX_GAS_PRICE = BigInt(500_000_000);
 
 // Explicit gas limits per operation (prevents MetaMask fallback to block gas limit)
@@ -144,6 +142,7 @@ export function useFaucet() {
 
 export function useDepositCollateral() {
   const publicClient = usePublicClient();
+  const chainId = useChainId();
   const { writeContractAsync } = useWriteContract();
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -153,6 +152,7 @@ export function useDepositCollateral() {
 
   const deposit = useCallback(async (tokenAddress: `0x${string}`, amount: string) => {
     if (!publicClient) throw new Error('No public client');
+    const contracts = getContractsForChain(chainId);
     setIsPending(true);
     setIsSuccess(false);
     setError(null);
@@ -167,7 +167,7 @@ export function useDepositCollateral() {
         address: tokenAddress,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [CONTRACTS.smartVault, amountWei],
+        args: [contracts.smartVault as `0x${string}`, amountWei],
         gas: GAS_LIMITS.approve,
         gasPrice,
       });
@@ -178,7 +178,7 @@ export function useDepositCollateral() {
 
       // Step 2: Deposit
       const depositTx = await writeContractAsync({
-        address: CONTRACTS.smartVault,
+        address: contracts.smartVault as `0x${string}`,
         abi: SMART_VAULT_ABI,
         functionName: 'deposit',
         args: [tokenAddress, amountWei],
@@ -197,7 +197,7 @@ export function useDepositCollateral() {
     } finally {
       setIsPending(false);
     }
-  }, [publicClient, writeContractAsync]);
+  }, [publicClient, writeContractAsync, chainId]);
 
   return { deposit, hash, isPending, isSuccess, error, step };
 }
@@ -208,21 +208,23 @@ export function useDepositCollateral() {
 
 export function useBorrow() {
   const publicClient = usePublicClient();
+  const chainId = useChainId();
   const { data: hash, writeContract, isPending, error, reset } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
 
   const borrow = useCallback(async (amount: string, durationDays: number) => {
+    const contracts = getContractsForChain(chainId);
     reset();
     const gasPrice = await getSafeGasPrice(publicClient);
     writeContract({
-      address: CONTRACTS.loanManager,
+      address: contracts.loanManager as `0x${string}`,
       abi: LOAN_MANAGER_ABI,
       functionName: 'borrow',
       args: [parseEther(amount), BigInt(durationDays)],
       gas: GAS_LIMITS.borrow,
       gasPrice,
     });
-  }, [writeContract, reset, publicClient]);
+  }, [writeContract, reset, publicClient, chainId]);
 
   return { borrow, hash, isPending: isPending || isConfirming, isSuccess, error };
 }
@@ -233,6 +235,7 @@ export function useBorrow() {
 
 export function useRepay() {
   const publicClient = usePublicClient();
+  const chainId = useChainId();
   const { writeContractAsync } = useWriteContract();
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -241,6 +244,7 @@ export function useRepay() {
 
   const repay = useCallback(async (amount: string) => {
     if (!publicClient) throw new Error('No public client');
+    const contracts = getContractsForChain(chainId);
     setIsPending(true);
     setIsSuccess(false);
     setError(null);
@@ -251,10 +255,10 @@ export function useRepay() {
 
       // Step 1: Approve USDC spend
       const approveTx = await writeContractAsync({
-        address: CONTRACTS.mockUSDC,
+        address: contracts.mockUSDC as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [CONTRACTS.loanManager, amountWei],
+        args: [contracts.loanManager as `0x${string}`, amountWei],
         gas: GAS_LIMITS.approve,
         gasPrice,
       });
@@ -264,7 +268,7 @@ export function useRepay() {
 
       // Step 2: Repay
       const repayTx = await writeContractAsync({
-        address: CONTRACTS.loanManager,
+        address: contracts.loanManager as `0x${string}`,
         abi: LOAN_MANAGER_ABI,
         functionName: 'repay',
         args: [amountWei],
@@ -281,7 +285,7 @@ export function useRepay() {
     } finally {
       setIsPending(false);
     }
-  }, [publicClient, writeContractAsync]);
+  }, [publicClient, writeContractAsync, chainId]);
 
   return { repay, hash, isPending, isSuccess, error };
 }

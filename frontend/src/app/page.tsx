@@ -10,7 +10,7 @@ import { Stagger, StaggerItem, Badge, Button } from '@/components/ui';
 
 const stats = [
   { label: 'Total Value Locked', value: '$2.1M+', sub: 'Testnet demo', icon: Database, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  { label: 'Active Borrowers', value: '340+', sub: 'On Arbitrum Sepolia', icon: Users, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+  { label: 'Active Borrowers', value: '340+', sub: 'On Moonbase Alpha', icon: Users, color: 'text-purple-500', bg: 'bg-purple-500/10' },
   { label: 'Anti-Liquidations', value: '58', sub: 'Positions auto-protected', icon: ShieldCheck, color: 'text-green-500', bg: 'bg-green-500/10' },
   { label: 'Avg. Health Factor', value: '2.41×', sub: 'Above safe threshold', icon: Activity, color: 'text-amber-500', bg: 'bg-amber-500/10' },
 ];
@@ -340,7 +340,7 @@ export default function HomePage() {
               Ready to Secure Your Yield?
             </h2>
             <p className="text-lg mb-12 font-normal max-w-xl mx-auto italic" style={{ color: 'var(--text-secondary)' }}>
-              Join the future of DeFi lending. No real money needed — everything runs on Arbitrum Sepolia testnet.
+              Join the future of DeFi lending on Polkadot. No real money needed — everything runs on Moonbase Alpha testnet with free DEV tokens.
             </p>
             <div className="flex flex-wrap justify-center gap-6">
               <Link href="/faucet">

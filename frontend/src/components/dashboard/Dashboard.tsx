@@ -12,6 +12,8 @@ import {
   useBorrowerScore,
 } from '@/hooks/useProtocolData';
 import { Wallet, TrendingUp, Shield, AlertTriangle, Star } from 'lucide-react';
+import { MultiChainCollateral } from './MultiChainCollateral';
+import { AIRiskAlerts } from './AIRiskAlerts';
 
 const MODE_STYLES: Record<string, string> = {
   Flexible: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
@@ -34,7 +36,7 @@ export function Dashboard() {
         <Wallet className="w-16 h-16 text-gray-400" />
         <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-300">Connect Your Wallet</h2>
         <p className="text-gray-600 dark:text-gray-400 text-center max-w-md">
-          Connect your wallet to view your live position, health factor, and interact with the SECP Protocol on Arbitrum Sepolia.
+          Connect your wallet to view your live position, health factor, and interact with the SECP Protocol on Moonbase Alpha (Polkadot).
         </p>
         <ConnectButton />
       </div>
@@ -63,6 +65,9 @@ export function Dashboard() {
           </span>
         </div>
       </div>
+
+      {/* AI Risk Alerts - New Feature */}
+      <AIRiskAlerts />
 
       {/* Stat Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -100,6 +105,9 @@ export function Dashboard() {
           trend={isSafe ? 'up' : 'down'}
         />
       </div>
+
+      {/* Multi-Chain Collateral - New Feature */}
+      <MultiChainCollateral />
 
       {/* Utilization bar */}
       {debtNum > 0 && (

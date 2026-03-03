@@ -1,7 +1,7 @@
 'use client';
 
-import { useAccount, useReadContract } from 'wagmi';
-import { CONTRACTS } from '@/config/contracts';
+import { useAccount, useReadContract, useChainId } from 'wagmi';
+import { getContractsForChain } from '@/config/contracts';
 import { formatEther } from 'viem';
 
 // ─── Collateral Manager ABI (only what we need) ───
@@ -77,9 +77,11 @@ const ERC20_ABI = [
 // ─────────────────────────────────────────────────
 export function useCollateralValue() {
   const { address } = useAccount();
+  const chainId = useChainId();
+  const contracts = getContractsForChain(chainId);
 
   const { data, isLoading, error } = useReadContract({
-    address: CONTRACTS.collateralManager,
+    address: contracts.collateralManager as `0x${string}`,
     abi: COLLATERAL_MANAGER_ABI,
     functionName: 'getTotalCollateralValue',
     args: address ? [address] : undefined,
@@ -101,9 +103,11 @@ export function useCollateralValue() {
 // ─────────────────────────────────────────────────
 export function useDebt() {
   const { address } = useAccount();
+  const chainId = useChainId();
+  const contracts = getContractsForChain(chainId);
 
   const { data, isLoading, error } = useReadContract({
-    address: CONTRACTS.loanManager,
+    address: contracts.loanManager as `0x${string}`,
     abi: LOAN_MANAGER_ABI,
     functionName: 'debt',
     args: address ? [address] : undefined,
@@ -125,9 +129,11 @@ export function useDebt() {
 // ─────────────────────────────────────────────────
 export function useHealthFactor() {
   const { address } = useAccount();
+  const chainId = useChainId();
+  const contracts = getContractsForChain(chainId);
 
   const { data, isLoading, error } = useReadContract({
-    address: CONTRACTS.collateralManager,
+    address: contracts.collateralManager as `0x${string}`,
     abi: COLLATERAL_MANAGER_ABI,
     functionName: 'getHealthFactor',
     args: address ? [address] : undefined,
@@ -160,9 +166,11 @@ export function useHealthFactor() {
 // ─────────────────────────────────────────────────
 export function useMaxBorrow() {
   const { address } = useAccount();
+  const chainId = useChainId();
+  const contracts = getContractsForChain(chainId);
 
   const { data, isLoading, error } = useReadContract({
-    address: CONTRACTS.collateralManager,
+    address: contracts.collateralManager as `0x${string}`,
     abi: COLLATERAL_MANAGER_ABI,
     functionName: 'getMaxBorrowAmount',
     args: address ? [address] : undefined,
@@ -208,9 +216,11 @@ export function useTokenBalance(tokenAddress: `0x${string}`) {
 // ─────────────────────────────────────────────────
 export function useLoanMode() {
   const { address } = useAccount();
+  const chainId = useChainId();
+  const contracts = getContractsForChain(chainId);
 
   const { data, isLoading, error } = useReadContract({
-    address: CONTRACTS.collateralManager,
+    address: contracts.collateralManager as `0x${string}`,
     abi: COLLATERAL_MANAGER_ABI,
     functionName: 'getMode',
     args: address ? [address] : undefined,
@@ -236,9 +246,11 @@ export function useLoanMode() {
 // ─────────────────────────────────────────────────
 export function useBorrowerScore() {
   const { address } = useAccount();
+  const chainId = useChainId();
+  const contracts = getContractsForChain(chainId);
 
   const { data, isLoading } = useReadContract({
-    address: CONTRACTS.loanManager,
+    address: contracts.loanManager as `0x${string}`,
     abi: LOAN_MANAGER_ABI,
     functionName: 'getBorrowerScore',
     args: address ? [address] : undefined,

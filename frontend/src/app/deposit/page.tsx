@@ -42,7 +42,7 @@ export default function DepositPage() {
                 <div>
                     <h1 className="text-4xl font-black mb-3 uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>Connect Wallet</h1>
                     <p className="max-w-md mx-auto font-medium text-neutral-500">
-                        Connect to Arbitrum Sepolia to deposit collateral and start borrowing.
+                        Connect to Moonbase Alpha (Polkadot testnet) to deposit collateral and start borrowing.
                     </p>
                 </div>
                 <ConnectButton />
