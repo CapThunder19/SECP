@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { Card, Button, Input } from '../ui/Card';
 import { useDepositCollateral } from '@/hooks/useProtocolActions';
 import { useTokenBalance } from '@/hooks/useProtocolData';
-import { getContractsForChain } from '@/config/contracts';
-import { Check, AlertCircle, Info } from 'lucide-react';
+import { getContractsForChain, XCMChain, XCM_CHAIN_NAMES } from '@/config/contracts';
+import { Check, AlertCircle, Info, Globe } from 'lucide-react';
 import { useChainId } from 'wagmi';
 
 function formatError(msg: string): string {
@@ -22,14 +22,25 @@ export function DepositForm() {
   const chainId = useChainId();
   const contracts = getContractsForChain(chainId);
   
-  // Define tokens based on current chain - only 3 tokens
+  // Define collateral tokens - USDC is ONLY for borrowing, NOT collateral
   const TOKENS = [
-    { name: 'USDC', address: contracts.mockUSDC as `0x${string}`, symbol: 'mUSDC', weight: 90, color: 'border-green-400 bg-green-50 dark:bg-green-900/20' },
-    { name: 'Yield Token', address: contracts.mockYield as `0x${string}`, symbol: 'mYLD', weight: 80, color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' },
-    { name: 'RWA Token', address: contracts.mockRWA as `0x${string}`, symbol: 'mRWA', weight: 100, color: 'border-purple-400 bg-purple-50 dark:bg-purple-900/20' },
+    { name: 'DOT', address: contracts.mockDOT as `0x${string}`, symbol: 'mDOT', weight: 85, color: 'border-pink-400 bg-pink-50 dark:bg-pink-900/20' },
+    { name: 'WBTC', address: contracts.mockWBTC as `0x${string}`, symbol: 'mWBTC', weight: 90, color: 'border-orange-400 bg-orange-50 dark:bg-orange-900/20' },
+    { name: 'RWA Token', address: contracts.mockRWA as `0x${string}`, symbol: 'mRWA', weight: 80, color: 'border-purple-400 bg-purple-50 dark:bg-purple-900/20' },
+    { name: 'Yield Token', address: contracts.mockYield as `0x${string}`, symbol: 'mYLD', weight: 75, color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' },
+  ];
+  
+  // XCM Chain options for cross-chain deposits
+  const XCM_CHAINS = [
+    { chain: XCMChain.PolkadotHub, name: XCM_CHAIN_NAMES[XCMChain.PolkadotHub], enabled: true },
+    { chain: XCMChain.Moonbeam, name: XCM_CHAIN_NAMES[XCMChain.Moonbeam], enabled: true },
+    { chain: XCMChain.Acala, name: XCM_CHAIN_NAMES[XCMChain.Acala], enabled: true },
+    { chain: XCMChain.Astar, name: XCM_CHAIN_NAMES[XCMChain.Astar], enabled: true },
+    { chain: XCMChain.Arbitrum, name: XCM_CHAIN_NAMES[XCMChain.Arbitrum], enabled: true },
   ];
 
   const [selectedToken, setSelectedToken] = useState(TOKENS[0]);
+  const [selectedChain, setSelectedChain] = useState<XCMChain>(XCMChain.PolkadotHub);
   const [amount, setAmount] = useState('');
   const { deposit, isPending, isSuccess, error, step } = useDepositCollateral();
   const { balance } = useTokenBalance(selectedToken.address);
@@ -54,14 +65,36 @@ export function DepositForm() {
   const weightedValue = amountNum * (selectedToken.weight / 100);
 
   return (
-    <Card title="Deposit Collateral">
+    <Card title="Deposit Collateral via XCM">
       <div className="space-y-4">
+        {/* Source Chain Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+            <Globe className="w-4 h-4" />
+            Source Chain
+          </label>
+          <select
+            value={selectedChain}
+            onChange={(e) => setSelectedChain(Number(e.target.value) as XCMChain)}
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+          >
+            {XCM_CHAINS.map((chain) => (
+              <option key={chain.chain} value={chain.chain} disabled={!chain.enabled}>
+                {chain.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Select the blockchain where your tokens are located
+          </p>
+        </div>
+
         {/* Token Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Select Token
+            Select Collateral Token
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {TOKENS.map((token) => (
               <button
                 key={token.address}
@@ -76,6 +109,9 @@ export function DepositForm() {
               </button>
             ))}
           </div>
+          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+            💡 USDC can only be borrowed, not deposited as collateral
+          </p>
         </div>
 
         {/* Amount Input */}
@@ -130,7 +166,7 @@ export function DepositForm() {
           <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded p-2">
             <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-400" />
             <span>
-              Deposit requires <strong>2 wallet confirmations</strong>: first approve token spending, then deposit into the vault. Both happen automatically.
+              Deposit requires <strong>2 wallet confirmations</strong>: first approve token spending, then deposit into the vault. <span className="text-blue-600 dark:text-blue-400 font-medium">Cross-chain deposits via XCM will be bridged automatically.</span>
             </span>
           </div>
         )}
@@ -167,7 +203,7 @@ export function DepositForm() {
         {isSuccess && (
           <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-3 rounded">
             <Check className="w-4 h-4 flex-shrink-0" />
-            Deposit successful! Your collateral has been added to the vault.
+            Deposit successful! Your collateral from {XCM_CHAIN_NAMES[selectedChain]} has been added to the vault.
           </div>
         )}
 
@@ -181,7 +217,7 @@ export function DepositForm() {
         >
           {step === 'approving' ? 'Step 1/2: Approving…' :
             step === 'depositing' ? 'Step 2/2: Depositing…' :
-              'Deposit Collateral'}
+              `Deposit from ${XCM_CHAIN_NAMES[selectedChain]}`}
         </Button>
       </div>
     </Card>

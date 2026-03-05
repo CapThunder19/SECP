@@ -17,22 +17,23 @@ const stats = [
 
 const features = [
   { icon: Shield, color: '#6366f1', title: 'Anti-Liquidation AI', desc: 'Instead of instantly liquidating, SECP automatically switches vault modes and uses yield earnings to repay debt slowly.' },
-  { icon: BarChart2, color: '#22c55e', title: 'Multi-Asset Collateral', desc: 'Deposit USDC, Yield tokens, and RWA tokens as collateral. Each asset has a risk weight that determines your borrowing power.' },
+  { icon: BarChart2, color: '#22c55e', title: 'Multi-Asset Collateral', desc: 'Deposit DOT, WBTC, RWA, and Yield tokens as collateral via XCM from multiple chains. Each asset has a risk weight.' },
   { icon: Zap, color: '#f59e0b', title: 'Borrower Memory', desc: 'The protocol tracks your repayment history. Reliable borrowers are rewarded with Flexible mode and higher LTV ratios.' },
   { icon: Lock, color: '#ec4899', title: 'Vault Modes', desc: 'Flexible → Conservative → Freeze. The vault mode adjusts automatically based on market volatility and your health factor.' },
   { icon: RefreshCw, color: '#06b6d4', title: 'Yield Diversion', desc: 'When in Freeze mode, yield earnings are automatically rerouted to repay your loan — protecting your collateral.' },
-  { icon: TrendingDown, color: '#8b5cf6', title: 'Market Simulation', desc: 'Simulate a market crash to see exactly how SECP\'s protection system responds — step by step in real time.' },
+  { icon: TrendingDown, color: '#8b5cf6', title: 'Cross-Chain XCM', desc: 'Deposit collateral from Polkadot Hub, Moonbeam, Acala, Astar, or Arbitrum. All chains, one unified vault.' },
 ];
 
 const collateral = [
-  { sym: 'mUSDC', name: 'Mock USDC', price: '$1.00', weight: '90%', color: '#22c55e', desc: 'Stable, low-risk collateral' },
-  { sym: 'mYLD', name: 'Mock Yield', price: '$1.05', weight: '80%', color: '#f59e0b', desc: 'Yield-bearing asset' },
-  { sym: 'mRWA', name: 'Mock RWA', price: '$1.50', weight: '100%', color: '#6366f1', desc: 'Real-World Asset (safest)' },
+  { sym: 'mDOT', name: 'Mock DOT', price: '$6.00', weight: '85%', color: '#e91e8c', desc: 'Polkadot native token' },
+  { sym: 'mWBTC', name: 'Mock WBTC', price: '$65,000', weight: '90%', color: '#f7931a', desc: 'Wrapped Bitcoin' },
+  { sym: 'mRWA', name: 'Mock RWA', price: '$1.50', weight: '80%', color: '#6366f1', desc: 'Real-World Asset' },
+  { sym: 'mYLD', name: 'Mock Yield', price: '$1.05', weight: '75%', color: '#f59e0b', desc: 'Yield-bearing token' },
 ];
 
 const steps = [
-  { n: '01', title: 'Get Test Tokens', desc: 'Visit the Faucet page and claim 1,000 mUSDC, mYLD, and mRWA tokens for free.', href: '/faucet', cta: 'Go to Faucet' },
-  { n: '02', title: 'Deposit Collateral', desc: 'Deposit your tokens into the SmartVault. Your collateral value determines your max borrow.', href: '/deposit', cta: 'Deposit' },
+  { n: '01', title: 'Get Test Tokens', desc: 'Visit the Faucet page and claim mDOT, mWBTC, mUSDC, mRWA, and mYLD tokens for free.', href: '/faucet', cta: 'Go to Faucet' },
+  { n: '02', title: 'Deposit Collateral', desc: 'Deposit your tokens (DOT, WBTC, RWA, or Yield) into the SmartVault. Your collateral value determines your max borrow.', href: '/deposit', cta: 'Deposit' },
   { n: '03', title: 'Borrow USDC', desc: 'Borrow USDC against your collateral at up to 75% LTV with a flexible or fixed duration.', href: '/borrow', cta: 'Borrow' },
   { n: '04', title: 'Crash the Market', desc: 'Try the Market Simulator to see how SECP automatically protects your position during a crash.', href: '/market', cta: 'Simulate' },
 ];

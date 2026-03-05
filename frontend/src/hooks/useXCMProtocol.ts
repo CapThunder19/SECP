@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useAccount, useReadContract, useWriteContract, useChainId } from 'wagmi';
 import { getContractsForChain, XCMChain } from '@/config/contracts';
 import { formatEther, parseEther } from 'viem';
@@ -209,6 +210,99 @@ export function useWithdrawToCrossChain() {
     isPending,
     isSuccess,
     error,
+  };
+}
+
+// ─────────────────────────────────────────────────
+// useCrossChainDepositCollateral — Deposit collateral from any chain
+// ─────────────────────────────────────────────────
+
+export function useCrossChainDepositCollateral() {
+  const { address } = useAccount();
+  const { writeContract, isPending, isSuccess, error, data: hash } = useWriteContract();
+  const chainId = useChainId();
+  const contracts = getContractsForChain(chainId);
+  const [step, setStep] = useState<'approve' | 'transfer' | 'deposit' | 'done'>('approve');
+
+  const depositFromChain = async (
+    token: `0x${string}`,
+    amount: string,
+    sourceChain: XCMChain
+  ) => {
+    if (!address) return;
+    
+    try {
+      const amountWei = parseEther(amount);
+      const bridgeAddress = contracts.xcmBridge as `0x${string}`;
+      
+      // Step 1: Approve bridge to spend tokens
+      setStep('approve');
+      await writeContract({
+        address: token,
+        abi: [
+          {
+            type: 'function',
+            name: 'approve',
+            inputs: [
+              { name: 'spender', type: 'address' },
+              { name: 'amount', type: 'uint256' }
+            ],
+            outputs: [{ name: '', type: 'bool' }],
+            stateMutability: 'nonpayable'
+          }
+        ],
+        functionName: 'approve',
+        args: [bridgeAddress, amountWei],
+      });
+      
+      // Wait for approval confirmation (you might want to use waitForTransactionReceipt here)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Step 2: Transfer tokens to bridge
+      setStep('transfer');
+      await writeContract({
+        address: token,
+        abi: [
+          {
+            type: 'function',
+            name: 'transfer',
+            inputs: [
+              { name: 'to', type: 'address' },
+              { name: 'amount', type: 'uint256' }
+            ],
+            outputs: [{ name: '', type: 'bool' }],
+            stateMutability: 'nonpayable'
+          }
+        ],
+        functionName: 'transfer',
+        args: [bridgeAddress, amountWei],
+      });
+      
+      // Wait for transfer confirmation
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Step 3: Initiate cross-chain deposit
+      setStep('deposit');
+      await writeContract({
+        address: bridgeAddress,
+        abi: XCM_BRIDGE_ABI,
+        functionName: 'initiateCrossChainDeposit',
+        args: [address, token, amountWei, sourceChain],
+      });
+      
+      setStep('done');
+    } catch (err) {
+      console.error('Cross-chain deposit error:', err);
+      throw err;
+    }
+  };
+
+  return {
+    depositFromChain,
+    isPending,
+    isSuccess,
+    error,
+    step,
   };
 }
 

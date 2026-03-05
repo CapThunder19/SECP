@@ -95,16 +95,36 @@ export default function FaucetPage() {
     const chainId = useChainId();
     const contracts = getContractsForChain(chainId);
 
-    // Define tokens - only 3 core tokens
+    // Define tokens - USDC is borrowable only, others are collateral
     const TOKENS = [
         {
-            name: 'Mock USDC',
-            address: contracts.mockUSDC as `0x${string}`,
-            symbol: 'mUSDC',
-            color: '#22c55e',
-            bg: 'rgba(34,197,94,0.08)',
-            border: 'rgba(34,197,94,0.2)',
-            desc: 'Stable collateral — 90% risk weight',
+            name: 'Mock DOT',
+            address: contracts.mockDOT as `0x${string}`,
+            symbol: 'mDOT',
+            color: '#e91e8c',
+            bg: 'rgba(233,30,140,0.08)',
+            border: 'rgba(233,30,140,0.2)',
+            desc: '✅ Collateral — 85% risk weight',
+            amount: '100',
+        },
+        {
+            name: 'Mock WBTC',
+            address: contracts.mockWBTC as `0x${string}`,
+            symbol: 'mWBTC',
+            color: '#f7931a',
+            bg: 'rgba(247,147,26,0.08)',
+            border: 'rgba(247,147,26,0.2)',
+            desc: '✅ Collateral — 90% risk weight',
+            amount: '100',
+        },
+        {
+            name: 'Mock RWA Token',
+            address: contracts.mockRWA as `0x${string}`,
+            symbol: 'mRWA',
+            color: '#6366f1',
+            bg: 'rgba(99,102,241,0.08)',
+            border: 'rgba(99,102,241,0.2)',
+            desc: '✅ Collateral — 80% risk weight',
             amount: '1,000',
         },
         {
@@ -114,17 +134,7 @@ export default function FaucetPage() {
             color: '#f59e0b',
             bg: 'rgba(245,158,11,0.08)',
             border: 'rgba(245,158,11,0.2)',
-            desc: 'Yield-bearing collateral — 80% risk weight',
-            amount: '1,000',
-        },
-        {
-            name: 'Mock RWA Token',
-            address: contracts.mockRWA as `0x${string}`,
-            symbol: 'mRWA',
-            color: '#6366f1',
-            bg: 'rgba(99,102,241,0.08)',
-            border: 'rgba(99,102,241,0.2)',
-            desc: 'Real-World Asset collateral — 100% risk weight',
+            desc: '✅ Collateral — 75% risk weight',
             amount: '1,000',
         },
     ];
@@ -152,7 +162,7 @@ export default function FaucetPage() {
             ) : (
                 <>
                     <GasBalanceChecker />
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                         {TOKENS.map((t) => <FaucetCard key={t.address} token={t} />)}
                     </div>
                 </>

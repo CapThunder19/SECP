@@ -230,7 +230,8 @@ export default function DashboardPage() {
                     </Link>
                 </div>
                 <div className="space-y-2">
-                    <TokenRow name="Mock USDC" symbol="mUSDC" address={contracts.mockUSDC as `0x${string}`} weight={90} color="#22c55e" i={0} />
+                    <TokenRow name="Mock DOT" symbol="mDOT" address={contracts.mockDOT as `0x${string}`} weight={85} color="#e91e8c" i={0} />
+                    <TokenRow name="Mock WBTC" symbol="mWBTC" address={contracts.mockWBTC as `0x${string}`} weight={90} color="#f7931a" i={1} />
                     <TokenRow name="Mock Yield" symbol="mYLD" address={contracts.mockYield as `0x${string}`} weight={80} color="#f59e0b" i={1} />
                     <TokenRow name="Mock RWA" symbol="mRWA" address={contracts.mockRWA as `0x${string}`} weight={100} color="#6366f1" i={2} />
                 </div>

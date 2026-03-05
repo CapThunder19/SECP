@@ -17,7 +17,14 @@
     "setup:polkadot-mainnet": "hardhat run scripts/setup-polkadot.ts --network polkadotHub",
     "deploy:local": "hardhat run scripts/deploy.ts --network hardhat",
     "interact:local": "hardhat run scripts/interact.ts --network hardhat",
-    "node": "hardhat node"
+    "node": "hardhat node",
+    "bridge:deploy-sepolia": "hardhat run scripts/deploy-bridge-sepolia.ts --network sepolia",
+    "bridge:relayer": "tsx scripts/bridge-relayer.ts",
+    "bridge:relayer-v2": "tsx scripts/bridge-relayer-v2.ts",
+    "bridge:test": "tsx scripts/test-bridge.ts",
+    "bridge:upgrade": "tsx scripts/upgrade-bridge.ts",
+    "bridge:upgrade-sepolia": "tsx scripts/upgrade-bridge-sepolia.ts",
+    "fund:moonbase": "tsx scripts/fund-moonbase.ts"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +39,7 @@
     "@types/node": "^22.19.11",
     "forge-std": "github:foundry-rs/forge-std#v1.9.4",
     "hardhat": "^3.1.8",
+    "tsx": "^4.21.0",
     "typescript": "~5.8.0",
     "viem": "^2.46.1"
   },

@@ -1,7 +1,7 @@
 'use client';
 
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { arbitrumSepolia } from 'wagmi/chains';
+import { arbitrumSepolia, sepolia } from 'wagmi/chains';
 import { http } from 'wagmi';
 import { fallback } from 'viem';
 import { defineChain } from 'viem';
@@ -66,7 +66,7 @@ const projectId =
 export const config = getDefaultConfig({
   appName: 'SECP Protocol',
   projectId,
-  chains: [moonbaseAlpha, polkadotHub, arbitrumSepolia],
+  chains: [moonbaseAlpha, polkadotHub, arbitrumSepolia, sepolia],
   transports: {
     // Polkadot Asset Hub with fallback
     [polkadotHub.id]: fallback([
@@ -82,6 +82,12 @@ export const config = getDefaultConfig({
       http('https://sepolia-rollup.arbitrum.io/rpc'),
       http('https://arbitrum-sepolia.blockpi.network/v1/rpc/public'),
       http('https://public.stackup.sh/api/v1/node/arbitrum-sepolia'),
+    ]),
+    // Ethereum Sepolia
+    [sepolia.id]: fallback([
+      http('https://ethereum-sepolia-rpc.publicnode.com'),
+      http('https://rpc2.sepolia.org'),
+      http('https://sepolia.gateway.tenderly.co'),
     ]),
   },
   ssr: true,

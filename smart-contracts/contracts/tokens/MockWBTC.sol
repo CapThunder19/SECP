@@ -7,18 +7,18 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /**
  * @title MockWBTC
  * @notice Mock Wrapped Bitcoin token for testing cross-chain collateral
- * @dev ERC20 token with 8 decimals (matching real BTC)
+ * @dev ERC20 token with 18 decimals (using standard decimals for frontend compatibility)
  */
 contract MockWBTC is ERC20, Ownable {
-    uint256 public faucetAmount = 1 * 1e8; // 1 WBTC per faucet call (8 decimals)
+    uint256 public faucetAmount = 100 * 1e18; // 100 WBTC per faucet call (18 decimals for testnet)
 
     constructor() ERC20("Mock Wrapped Bitcoin", "mWBTC") Ownable(msg.sender) {
-        _mint(msg.sender, 21_000_000 * 1e8); // 21M WBTC max supply (matches BTC)
+        _mint(msg.sender, 21_000_000 * 1e18); // 21M WBTC max supply
     }
 
-    /// @notice Override decimals to match real Bitcoin (8 decimals)
+    /// @notice Override decimals - using 18 for testnet compatibility
     function decimals() public pure override returns (uint8) {
-        return 8;
+        return 18;
     }
 
     /// @notice Owner can mint for testing or liquidity provision

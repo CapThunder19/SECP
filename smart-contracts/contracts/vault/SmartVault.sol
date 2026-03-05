@@ -15,18 +15,34 @@ contract SmartVault is Ownable {
     mapping(address => address[]) public userTokens;
 
     mapping(address => bool) public frozen;
+    
+    // USDC is borrowable only, not depositable as collateral
+    address public usdcToken;
+    
+    // XCM Bridge for cross-chain deposits
+    address public xcmBridge;
 
     event Deposit(address user, address token, uint256 amount);
     event Withdraw(address user, address token, uint256 amount);
+    event CrossChainDeposit(address user, address token, uint256 amount, uint8 sourceChain);
 
     constructor() Ownable(msg.sender) {}
 
     function addSupportedToken(address token) external onlyOwner {
         supportedTokens[token] = true;
     }
+    
+    function setUSDCToken(address _usdc) external onlyOwner {
+        usdcToken = _usdc;
+    }
+    
+    function setXCMBridge(address _xcmBridge) external onlyOwner {
+        xcmBridge = _xcmBridge;
+    }
 
     function deposit(address token, uint256 amount) external {
         require(supportedTokens[token], "Not supported");
+        require(token != usdcToken, "USDC is borrowable only, not depositable as collateral");
 
         IERC20(token).transferFrom(msg.sender, address(this), amount);
 
@@ -38,6 +54,30 @@ contract SmartVault is Ownable {
         collateral[msg.sender][token].amount += amount;
 
         emit Deposit(msg.sender, token, amount);
+    }
+    
+    /// @notice Deposit from another chain via XCM bridge
+    function depositFromCrossChain(
+        address user,
+        address token,
+        uint256 amount,
+        uint8 sourceChain
+    ) external {
+        require(msg.sender == xcmBridge, "Only XCM bridge");
+        require(supportedTokens[token], "Not supported");
+        require(token != usdcToken, "USDC is borrowable only");
+        
+        // No token transfer needed - bridge handles it
+        // Just update internal accounting
+        
+        if (!collateral[user][token].enabled) {
+            userTokens[user].push(token);
+            collateral[user][token].enabled = true;
+        }
+
+        collateral[user][token].amount += amount;
+        
+        emit CrossChainDeposit(user, token, amount, sourceChain);
     }
 
     function withdraw(address token, uint256 amount) external {

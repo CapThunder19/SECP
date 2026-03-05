@@ -104,6 +104,7 @@ async function main() {
   // Get contract instances
   console.log("📦 Loading contract instances...\n");
   const collateralManager = await getContractInstance("CollateralManager", addresses.CollateralManager);
+  const smartVault = await getContractInstance("SmartVault", addresses.SmartVault);
   const xcmBridge = await getContractInstance("XCMBridge", addresses.XCMBridge);
   const aiRiskPredictor = await getContractInstance("AIRiskPredictor", addresses.AIRiskPredictor);
   const crossChainRebalancer = await getContractInstance("CrossChainRebalancer", addresses.CrossChainRebalancer);
@@ -156,7 +157,22 @@ async function main() {
   
   hash = await xcmBridge.write.whitelistToken([addresses.MockRWA as `0x${string}`, true]);
   await publicClient.waitForTransactionReceipt({ hash });
-  console.log("✅ Tokens whitelisted for cross-chain transfers\n");
+  console.log("✅ Tokens whitelisted for cross-chain transfers");
+  
+  // Connect XCM Bridge to SmartVault for direct collateral deposits
+  hash = await xcmBridge.write.setSmartVault([addresses.SmartVault as `0x${string}`]);
+  await publicClient.waitForTransactionReceipt({ hash });
+  console.log("✅ XCM Bridge connected to SmartVault");
+  
+  // Set SmartVault configuration: USDC is borrowable only, not collateral
+  hash = await smartVault.write.setUSDCToken([addresses.MockUSDC as `0x${string}`]);
+  await publicClient.waitForTransactionReceipt({ hash });
+  console.log("✅ USDC set as borrowable-only (not collateral)");
+  
+  // Connect SmartVault to XCM Bridge for cross-chain deposits
+  hash = await smartVault.write.setXCMBridge([addresses.XCMBridge as `0x${string}`]);
+  await publicClient.waitForTransactionReceipt({ hash });
+  console.log("✅ SmartVault connected to XCM Bridge\n");
 
   console.log("🔗 Connecting contracts...");
   

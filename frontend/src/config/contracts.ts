@@ -34,22 +34,39 @@ export const CONTRACTS = {
     xcmBridge: "0x0000000000000000000000000000000000000000",
     aiRiskPredictor: "0x0000000000000000000000000000000000000000",
   },
-  // Moonbase Alpha (Moonbeam testnet - DEPLOYED ✅)
+  // Moonbase Alpha (Moonbeam testnet - DEPLOYED ✅ - Updated with XCM support)
   moonbaseAlpha: {
-    mockUSDC: "0x2910009bb55f0f1efc4408f1b794600ac529bcc3",
-    mockYield: "0x90c5f5af3086655d10e3daa70c97e8f605a333c8",
-    mockRWA: "0xc500240db43ef946eb0fed6c2f3c80a2d5195a8e",
-    mockDOT: "0xa0fa71cba7361205b0e0db428ec0c51f8d9937cd",
-    mockWBTC: "0xbed7cf7901215030751c4e5c3ac36e6acc33d51e",
-    mockOracle: "0x2431412258006a6f49b4f3361767427c3cbc3532",
-    smartVault: "0x9ac3a6ba0a9459994aa6c568ae19920138487fca",
-    loanManager: "0xcb29fec76ff9a4e7432b5f725b16aad190a0cc26",
-    collateralManager: "0xfd46da485e35732d802325d31534ba34d0335033",
-    antiLiquidation: "0xb0b8e5ef9eef4861998a2a4a0d73bc7ea86bee28",
-    crossChainRebalancer: "0xfbf16e331ae416b7406e9a98017e8542bbf88582",
-    yieldManager: "0xd9a390325db7f17db81cb1d69ed7fde6366c2690",
-    xcmBridge: "0x6a70042cbe0164b876a6df864b5f01e4142fe3f5",
-    aiRiskPredictor: "0x7a3e5b12b80aa89026493d22187fb6923da85c46",
+    mockUSDC: "0x76f94baa45893e1ce846f926d761431caa6e2378",
+    mockYield: "0x308dccae804cb81d74bc02ff1ddaf7c6bcfb3fe0",
+    mockRWA: "0xdbd06fa5936b2d6ccce8fb269d59b400ff73e6ec",
+    mockDOT: "0x375318d88b0fcaf58538cf8e3812640f38a1ff98",
+    mockWBTC: "0xc825fe08d9bbad713bce175c8d4e6fdf20f9e4c0", // Updated with 8 decimals
+    mockOracle: "0x33f27f3ec5f0e48bdf3aa8d35204e94e742fc585",
+    smartVault: "0xddcfe550d0e1fa5cc4ed34dad01741058b98411d",
+    loanManager: "0x88482b88501cd20ff3610ff4318d2c00bac0c382",
+    collateralManager: "0x49a369a90e490506b89ad2bf4546fb68521036cc",
+    antiLiquidation: "0x20a7fdd6d0955da5bbfba4f099f298b579b24f75",
+    crossChainRebalancer: "0x7829a0f917f5eb9cc1be58a6e234276045b6c9bd",
+    yieldManager: "0xf5d5d4b8b736f2a1dbb35b1c017abe243d44c117",
+    xcmBridge: "0xe9a634a478eaddc288721736426abd5db0395825",
+    aiRiskPredictor: "0xc5ba634b391e58d82107b73801f861226ce25633",
+  },
+  // Sepolia (Ethereum testnet - Bridge deployment)
+  sepolia: {
+    mockUSDC: "0xff33201c7ee4e533052687a02307fa692f0c8833",
+    mockYield: "0x0000000000000000000000000000000000000000", // Not deployed
+    mockRWA: "0x0000000000000000000000000000000000000000", // Not deployed
+    mockDOT: "0x79051e5b5a0936718014acd1c53821de5055b39f",
+    mockWBTC: "0x7599834019981d6aee00e2164f3587244c682199",
+    mockOracle: "0x0000000000000000000000000000000000000000", // Not deployed
+    smartVault: "0x0000000000000000000000000000000000000000", // Not deployed
+    loanManager: "0x0000000000000000000000000000000000000000", // Not deployed
+    collateralManager: "0x0000000000000000000000000000000000000000", // Not deployed
+    antiLiquidation: "0x0000000000000000000000000000000000000000", // Not deployed
+    crossChainRebalancer: "0x0000000000000000000000000000000000000000", // Not deployed
+    yieldManager: "0x0000000000000000000000000000000000000000", // Not deployed
+    xcmBridge: "0xd7a7b423350513b1651743575a94f99b227dcaef",
+    aiRiskPredictor: "0x0000000000000000000000000000000000000000", // Not deployed
   },
 } as const;
 
@@ -58,6 +75,7 @@ export const CHAIN_IDS = {
   arbitrumSepolia: 421614,
   polkadotHub: 1000,
   moonbaseAlpha: 1287,
+  sepolia: 11155111,
 } as const;
 
 // Get contracts for current chain
@@ -69,6 +87,8 @@ export function getContractsForChain(chainId: number) {
       return CONTRACTS.polkadotHub;
     case CHAIN_IDS.moonbaseAlpha:
       return CONTRACTS.moonbaseAlpha;
+    case CHAIN_IDS.sepolia:
+      return CONTRACTS.sepolia;
     default:
       return CONTRACTS.moonbaseAlpha; // Default to testnet
   }
@@ -95,6 +115,11 @@ export const COLLATERAL_TOKENS = {
     { symbol: "mRWA", name: "Mock RWA", weight: 80 },
     { symbol: "mYield", name: "Mock Yield", weight: 75 },
   ],
+  sepolia: [
+    { symbol: "mDOT", name: "Mock DOT", weight: 85 },
+    { symbol: "mWBTC", name: "Mock WBTC", weight: 90 },
+    { symbol: "mUSDC", name: "Mock USDC", weight: 95 },
+  ],
 } as const;
 
 // XCM supported chains
@@ -104,6 +129,7 @@ export enum XCMChain {
   Acala = 2,
   Astar = 3,
   Arbitrum = 4,
+  Sepolia = 5,
 }
 
 export const XCM_CHAIN_NAMES = {
@@ -112,4 +138,5 @@ export const XCM_CHAIN_NAMES = {
   [XCMChain.Acala]: "Acala",
   [XCMChain.Astar]: "Astar",
   [XCMChain.Arbitrum]: "Arbitrum",
+  [XCMChain.Sepolia]: "Sepolia",
 } as const;
