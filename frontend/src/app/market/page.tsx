@@ -39,6 +39,77 @@ function genHistory(base: number, seed: number): number[] {
     }
     return d;
 }
+
+// Generate OHLC candlestick data
+interface CandleData { open: number; high: number; low: number; close: number; }
+function genCandleHistory(base: number, seed: number, count: number = 50, crashProgress: number = 0, crashDrop: number = 0): CandleData[] {
+    const candles: CandleData[] = [];
+    let price = base;
+    
+    // Calculate how many candles are in "normal" state vs "crashing"
+    const normalCount = count - Math.floor(crashProgress * 2);
+    
+    for (let i = 0; i < count; i++) {
+        const open = price;
+        
+        // Increased volatility for more dramatic price swings
+        const volatility = 0.015 + Math.abs(Math.sin(seed + i * 0.5)) * 0.04;
+        const trend = Math.sin((seed + i) * 0.15) * 0.01; // Add trending behavior
+        
+        // Apply crash effect to later candles
+        let change = (Math.sin(seed + i * 0.7 + 1.5) * volatility) + trend;
+        if (i >= normalCount && crashProgress > 0) {
+            const crashIntensity = ((i - normalCount) / (count - normalCount)) * crashDrop;
+            change -= crashIntensity;
+        }
+        
+        const close = open * (1 + change);
+        
+        // Wicks can extend further for realistic candles
+        const wickRange = Math.abs(open - close) * (1 + Math.random() * 1.5);
+        const high = Math.max(open, close) + wickRange * Math.abs(Math.sin(seed + i * 1.2)) * 0.4;
+        const low = Math.min(open, close) - wickRange * Math.abs(Math.cos(seed + i * 1.1)) * 0.4;
+        
+        candles.push({ open, high, low, close });
+        price = close;
+    }
+    return candles;
+}
+
+// Calculate Simple Moving Average
+function calculateSMA(candles: CandleData[], period: number): number[] {
+    const sma: number[] = [];
+    for (let i = 0; i < candles.length; i++) {
+        if (i < period - 1) {
+            // For initial values, use exponential backfill
+            const available = candles.slice(0, i + 1);
+            const sum = available.reduce((acc, c) => acc + c.close, 0);
+            sma.push(sum / available.length);
+        } else {
+            const sum = candles.slice(i - period + 1, i + 1).reduce((acc, c) => acc + c.close, 0);
+            sma.push(sum / period);
+        }
+    }
+    return sma;
+}
+
+// Smooth path generator for curves
+function smoothCurvePath(points: [number, number][]): string {
+    if (points.length < 2) return '';
+    
+    let path = `M ${points[0][0]},${points[0][1]}`;
+    
+    for (let i = 0; i < points.length - 1; i++) {
+        const curr = points[i];
+        const next = points[i + 1];
+        const controlPointDistance = (next[0] - curr[0]) * 0.5;
+        
+        path += ` C ${curr[0] + controlPointDistance},${curr[1]} ${next[0] - controlPointDistance},${next[1]} ${next[0]},${next[1]}`;
+    }
+    
+    return path;
+}
+
 function smooth(pts: [number, number][]): string {
     if (pts.length < 2) return '';
     let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
@@ -56,21 +127,287 @@ function toPts(data: number[], W: number, H: number): [number, number][] {
     return data.map((v, i) => [(i / (data.length - 1)) * W, H - 6 - ((v - min) / rng) * (H - 18)]);
 }
 
-/* ── Price Chart ─────────────────────────────────── */
-function PriceChart({ sets, crashed }: { sets: { key: string; data: number[]; color: string }[]; crashed: boolean }) {
-    const W = 800, H = 200;
+/* ── Price Chart Components ─────────────────────────────────── */
+type ChartType = 'line' | 'candlestick' | 'bar' | 'area';
+
+// Candlestick Chart
+function CandlestickChart({ 
+    tokenKey, 
+    color, 
+    crashed, 
+    candleData 
+}: { 
+    tokenKey: string;
+    color: string;
+    crashed: boolean;
+    candleData: CandleData[];
+}) {
+    const W = 1000, H = 400; // Much larger canvas
+    const count = candleData.length || 50;
+    const candleWidth = Math.max(6, (W - 100) / count * 0.7); // Wider candles
+    const wickWidth = 2;
+    
+    // Get all values for scaling
+    const allValues = candleData.flatMap(c => [c.high, c.low]);
+    const min = Math.min(...allValues) * 0.985;
+    const max = Math.max(...allValues) * 1.015;
+    const rng = max - min || 0.001;
+    
+    const priceToY = (price: number) => H - 20 - ((price - min) / rng) * (H - 50);
+    
+    // Calculate price labels
+    const priceLevels = [0.2, 0.4, 0.6, 0.8].map(r => min + rng * r);
+    
+    // Calculate moving averages
+    const sma7 = calculateSMA(candleData, 7);
+    const sma20 = calculateSMA(candleData, 20);
+    
+    const sma7Points: [number, number][] = sma7.map((val, i) => [
+        50 + (i / (count - 1)) * (W - 100),
+        priceToY(val)
+    ]);
+    
+    const sma20Points: [number, number][] = sma20.map((val, i) => [
+        50 + (i / (count - 1)) * (W - 100),
+        priceToY(val)
+    ]);
+    
     return (
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-xl border-2" style={{ height: 200, background: 'hsl(var(--card))', borderColor: 'var(--border-strong)' }}>
-            {[0.25, 0.5, 0.75].map(r => <line key={r} x1="0" y1={r * H} x2={W} y2={r * H} stroke="rgba(0,0,0,0.05)" strokeWidth="1" />)}
-            {crashed && <rect x="0" y="0" width={W} height={H} fill="rgba(239,68,68,0.05)" />}
-            {sets.map(({ key, data, color }, i) => {
-                const pts = toPts(data, W, H);
-                return (<g key={key}><path d={smooth(pts)} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" /></g>);
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-xl border-2" 
+            style={{ height: 400, background: 'hsl(var(--card))', borderColor: 'var(--border-strong)' }}>
+            {/* Grid lines with price labels */}
+            {priceLevels.map((price, idx) => {
+                const y = priceToY(price);
+                return (
+                    <g key={idx}>
+                        <line x1="50" y1={y} x2={W - 20} y2={y} 
+                            stroke="hsl(var(--border))" strokeWidth="1" strokeDasharray="5,5" opacity="0.3" />
+                        <text x="15" y={y + 4} fill="var(--text-secondary)" fontSize="11" fontWeight="600">
+                            ${price.toFixed(3)}
+                        </text>
+                    </g>
+                );
             })}
-            {sets.map(({ key, data, color }) => { const pts = toPts(data, W, H); const [lx, ly] = pts[pts.length - 1]; return <g key={`d-${key}`}><circle cx={lx} cy={ly} r="6" fill="black" /><circle cx={lx} cy={ly} r="4" fill={color} /></g>; })}
-            {['−40m', '−30m', '−20m', '−10m', 'Now'].map((l, i, a) => <text key={l} x={(i / (a.length - 1)) * W} y={H - 5} textAnchor="middle" fill="var(--ink)" fontSize="10" fontWeight="900" className="uppercase tracking-widest">{l}</text>)}
+            
+            {crashed && (
+                <rect x="0" y="0" width={W} height={H} fill="rgba(239,68,68,0.08)" />
+            )}
+            
+            {/* Draw candlesticks */}
+            <g opacity={0.95}>
+                {candleData.map((candle, i) => {
+                    const x = 50 + (i / (count - 1)) * (W - 100);
+                    const isUp = candle.close >= candle.open;
+                    const bodyTop = priceToY(Math.max(candle.open, candle.close));
+                    const bodyBottom = priceToY(Math.min(candle.open, candle.close));
+                    const bodyHeight = Math.max(2, bodyBottom - bodyTop);
+                    
+                    return (
+                        <g key={i}>
+                            {/* Wick */}
+                            <line 
+                                x1={x} y1={priceToY(candle.high)} 
+                                x2={x} y2={priceToY(candle.low)}
+                                stroke={isUp ? '#22c55e' : '#ef4444'}
+                                strokeWidth={wickWidth}
+                                opacity={0.8}
+                            />
+                            {/* Body */}
+                            <rect
+                                x={x - candleWidth / 2}
+                                y={bodyTop}
+                                width={candleWidth}
+                                height={bodyHeight}
+                                fill={isUp ? '#22c55e' : '#ef4444'}
+                                stroke={isUp ? '#16a34a' : '#dc2626'}
+                                strokeWidth="1"
+                                opacity={0.95}
+                            />
+                        </g>
+                    );
+                })}
+            </g>
+            
+            {/* Draw moving average curves */}
+            <g>
+                {/* SMA20 - slower white line */}
+                <path
+                    d={smoothCurvePath(sma20Points)}
+                    fill="none"
+                    stroke="#ffffff"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={0.5}
+                    style={{ filter: 'drop-shadow(0 0 3px rgba(255,255,255,0.3))' }}
+                />
+                {/* SMA7 - faster colored line with glow */}
+                <path
+                    d={smoothCurvePath(sma7Points)}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={0.95}
+                    style={{ filter: `drop-shadow(0 0 5px ${color})` }}
+                />
+            </g>
+            
+            {/* Time labels */}
+            {['−40m', '−30m', '−20m', '−10m', 'Now'].map((l, i, a) => 
+                <text key={l} x={50 + (i / (a.length - 1)) * (W - 100)} y={H - 5} 
+                    textAnchor="middle" fill="var(--ink)" fontSize="11" 
+                    fontWeight="900" className="uppercase tracking-widest">{l}</text>
+            )}
         </svg>
     );
+}
+
+// Bar Chart
+function PriceBarChart({ sets, crashed }: { sets: { key: string; data: number[]; color: string }[]; crashed: boolean }) {
+    const W = 1000, H = 400;
+    const dataLength = sets[0]?.data.length || 40;
+    const barWidth = (W - 100) / dataLength * 0.8;
+    
+    const allValues = sets.flatMap(s => s.data);
+    const min = Math.min(...allValues) * 0.97;
+    const max = Math.max(...allValues) * 1.03;
+    const rng = max - min || 0.001;
+    
+    return (
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-xl border-2" style={{ height: 400, background: 'hsl(var(--card))', borderColor: 'var(--border-strong)' }}>
+            {[0.25, 0.5, 0.75].map(r => <line key={r} x1="50" y1={r * H} x2={W - 20} y2={r * H} stroke="hsl(var(--border))" strokeWidth="1" opacity="0.3" strokeDasharray="5,5" />)}
+            {crashed && <rect x="0" y="0" width={W} height={H} fill="rgba(239,68,68,0.08)" />}
+            
+            {sets.map(({ key, data, color }, setIdx) => {
+                const offset = (setIdx - (sets.length - 1) / 2) * barWidth / sets.length;
+                return (
+                    <g key={key}>
+                        {data.map((value, i) => {
+                            const x = 50 + (i / (dataLength - 1)) * (W - 100) + offset;
+                            const barHeight = ((value - min) / rng) * (H - 50);
+                            const y = H - 20 - barHeight;
+                            
+                            return (
+                                <rect
+                                    key={i}
+                                    x={x - barWidth / (sets.length * 2)}
+                                    y={y}
+                                    width={barWidth / sets.length}
+                                    height={Math.max(2, barHeight)}
+                                    fill={color}
+                                    stroke="var(--border-strong)"
+                                    strokeWidth="1"
+                                    opacity={0.85}
+                                />
+                            );
+                        })}
+                    </g>
+                );
+            })}
+            
+            {['−40m', '−30m', '−20m', '−10m', 'Now'].map((l, i, a) => 
+                <text key={l} x={50 + (i / (a.length - 1)) * (W - 100)} y={H - 5} textAnchor="middle" fill="var(--ink)" fontSize="11" fontWeight="900" className="uppercase tracking-widest">{l}</text>
+            )}
+        </svg>
+    );
+}
+
+// Area Chart
+function AreaChart({ sets, crashed }: { sets: { key: string; data: number[]; color: string }[]; crashed: boolean }) {
+    const W = 1000, H = 400;
+    return (
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-xl border-2" style={{ height: 400, background: 'hsl(var(--card))', borderColor: 'var(--border-strong)' }}>
+            {[0.25, 0.5, 0.75].map(r => <line key={r} x1="50" y1={r * H} x2={W - 20} y2={r * H} stroke="hsl(var(--border))" strokeWidth="1" opacity="0.3" strokeDasharray="5,5" />)}
+            {crashed && <rect x="0" y="0" width={W} height={H} fill="rgba(239,68,68,0.08)" />}
+            
+            {sets.map(({ key, data, color }) => {
+                const pts = toPts(data, W, H);
+                const adjustedPts: [number, number][] = pts.map(([x, y]) => [50 + (x / W) * (W - 100), y]);
+                return (
+                    <g key={key}>
+                        <path d={area(adjustedPts, H)} fill={color} opacity="0.2" />
+                        <path d={smooth(adjustedPts)} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" />
+                    </g>
+                );
+            })}
+            
+            {sets.map(({ key, data, color }) => { 
+                const pts = toPts(data, W, H);
+                const adjustedPts: [number, number][] = pts.map(([x, y]) => [50 + (x / W) * (W - 100), y]);
+                const [lx, ly] = adjustedPts[adjustedPts.length - 1]; 
+                return <g key={`d-${key}`}><circle cx={lx} cy={ly} r="6" fill="var(--border-strong)" /><circle cx={lx} cy={ly} r="4" fill={color} /></g>; 
+            })}
+            
+            {['−40m', '−30m', '−20m', '−10m', 'Now'].map((l, i, a) => 
+                <text key={l} x={50 + (i / (a.length - 1)) * (W - 100)} y={H - 5} textAnchor="middle" fill="var(--ink)" fontSize="11" fontWeight="900" className="uppercase tracking-widest">{l}</text>
+            )}
+        </svg>
+    );
+}
+
+// Line Chart (original)
+function LineChart({ sets, crashed }: { sets: { key: string; data: number[]; color: string }[]; crashed: boolean }) {
+    const W = 1000, H = 400;
+    return (
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-xl border-2" style={{ height: 400, background: 'hsl(var(--card))', borderColor: 'var(--border-strong)' }}>
+            {[0.25, 0.5, 0.75].map(r => <line key={r} x1="50" y1={r * H} x2={W - 20} y2={r * H} stroke="hsl(var(--border))" strokeWidth="1" opacity="0.3" strokeDasharray="5,5" />)}
+            {crashed && <rect x="0" y="0" width={W} height={H} fill="rgba(239,68,68,0.08)" />}
+            {sets.map(({ key, data, color }) => {
+                const pts = toPts(data, W, H);
+                const adjustedPts: [number, number][] = pts.map(([x, y]) => [50 + (x / W) * (W - 100), y]);
+                return (<g key={key}><path d={smooth(adjustedPts)} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" /></g>);
+            })}
+            {sets.map(({ key, data, color }) => { 
+                const pts = toPts(data, W, H); 
+                const adjustedPts: [number, number][] = pts.map(([x, y]) => [50 + (x / W) * (W - 100), y]);
+                const [lx, ly] = adjustedPts[adjustedPts.length - 1]; 
+                return <g key={`d-${key}`}><circle cx={lx} cy={ly} r="6" fill="var(--border-strong)" /><circle cx={lx} cy={ly} r="4" fill={color} /></g>; 
+            })}
+            {['−40m', '−30m', '−20m', '−10m', 'Now'].map((l, i, a) => <text key={l} x={50 + (i / (a.length - 1)) * (W - 100)} y={H - 5} textAnchor="middle" fill="var(--ink)" fontSize="11" fontWeight="900" className="uppercase tracking-widest">{l}</text>)}
+        </svg>
+    );
+}
+
+// Main Price Chart with type selector
+function PriceChart({ 
+    sets, 
+    crashed, 
+    chartType,
+    candleData,
+    selectedToken
+}: { 
+    sets: { key: string; data: number[]; color: string }[]; 
+    crashed: boolean;
+    chartType: ChartType;
+    candleData: Record<string, CandleData[]>;
+    selectedToken: string;
+}) {
+    if (chartType === 'candlestick') {
+        const tokenConfig = {
+            mUSDC: { color: '#22c55e' },
+            mYLD: { color: '#f59e0b' },
+            mRWA: { color: '#6366f1' },
+        }[selectedToken as 'mUSDC' | 'mYLD' | 'mRWA'] || { color: '#22c55e' };
+        
+        return <CandlestickChart 
+            tokenKey={selectedToken} 
+            color={tokenConfig.color}
+            crashed={crashed} 
+            candleData={candleData[selectedToken] || []} 
+        />;
+    }
+    
+    switch (chartType) {
+        case 'bar':
+            return <PriceBarChart sets={sets} crashed={crashed} />;
+        case 'area':
+            return <AreaChart sets={sets} crashed={crashed} />;
+        case 'line':
+        default:
+            return <LineChart sets={sets} crashed={crashed} />;
+    }
 }
 
 /* ── Animated story steps ───────────────────────── */
@@ -181,6 +518,7 @@ export default function MarketPage() {
     const [txStatus, setTxStatus] = useState('');
     const [activeStep, setActiveStep] = useState(-1);
     const [crashProgress, setCrashProgress] = useState(0);
+    const [chartType, setChartType] = useState<ChartType>('line');
     const crashInterval = useRef<ReturnType<typeof setInterval> | null>(null);
     const stepTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -216,6 +554,20 @@ export default function MarketPage() {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [crashProgress, localDrop, pU, pY, pR]);
+
+    const [selectedToken, setSelectedToken] = useState<'mUSDC' | 'mYLD' | 'mRWA'>('mUSDC');
+    
+    // Generate candlestick data
+    const candleData = useMemo(() => {
+        const candleCount = 50; // More candles for detailed view
+        const drop = localDrop / 100;
+        
+        return {
+            mUSDC: genCandleHistory(pU, 0, candleCount, crashProgress, drop),
+            mYLD: genCandleHistory(pY, 3, candleCount, crashProgress, drop),
+            mRWA: genCandleHistory(pR, 7, candleCount, crashProgress, drop),
+        };
+    }, [pU, pY, pR, crashProgress, localDrop]);
 
     const chartSets = [
         { key: 'mUSDC', data: chartData.mUSDC, color: '#22c55e' },
@@ -394,20 +746,102 @@ export default function MarketPage() {
             {/* Chart */}
             <Card className="p-8 group shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]"
                 style={crashed ? { borderColor: '#ef4444' } : {}}>
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
                     <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-3">
                         <BarChart2 className="w-8 h-8" /> Price Feed
                     </h2>
-                    <div className="flex items-center gap-4">
-                        {[['mUSDC', '#22c55e'], ['mYLD', '#f59e0b'], ['mRWA', '#6366f1']].map(([k, c]) => (
-                            <div key={k} className="flex items-center gap-2">
-                                <div className="w-4 h-4 border-2 border-black rounded-full" style={{ background: c }} />
-                                <span className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">{k}</span>
-                            </div>
+                    
+                    {/* Chart Type Selector */}
+                    <div className="flex items-center gap-2 border-2 rounded-xl p-1" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--muted))' }}>
+                        {[
+                            { type: 'line' as ChartType, icon: Activity, label: 'Line' },
+                            { type: 'candlestick' as ChartType, icon: BarChart, label: 'Candle' },
+                            { type: 'bar' as ChartType, icon: BarChart2, label: 'Bar' },
+                            { type: 'area' as ChartType, icon: TrendingDown, label: 'Area' },
+                        ].map(({ type, icon: Icon, label }) => (
+                            <button
+                                key={type}
+                                onClick={() => setChartType(type)}
+                                className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${
+                                    chartType === type 
+                                        ? 'shadow-[3px_3px_0px_0px_rgba(var(--ink-rgb),1)]' 
+                                        : 'hover:bg-white/50'
+                                }`}
+                                style={{
+                                    background: chartType === type ? 'hsl(var(--card))' : 'transparent',
+                                    borderWidth: chartType === type ? '2px' : '0',
+                                    borderColor: 'var(--border-strong)',
+                                    color: chartType === type ? 'hsl(var(--foreground))' : 'var(--text-secondary)',
+                                }}
+                            >
+                                <Icon className="w-4 h-4" />
+                                {label}
+                            </button>
                         ))}
                     </div>
                 </div>
-                <PriceChart sets={chartSets} crashed={crashed} />
+                
+                {/* Token Selector for Candlestick */}
+                {chartType === 'candlestick' && (
+                    <div className="mb-6 flex items-center gap-4">
+                        <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>Select Token:</span>
+                        <div className="flex items-center gap-2 border-2 rounded-xl p-1" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--muted))' }}>
+                            {[
+                                { key: 'mUSDC' as const, color: '#22c55e', label: 'mUSDC' },
+                                { key: 'mYLD' as const, color: '#f59e0b', label: 'mYLD' },
+                                { key: 'mRWA' as const, color: '#6366f1', label: 'mRWA' },
+                            ].map(({ key, color, label }) => (
+                                <button
+                                    key={key}
+                                    onClick={() => setSelectedToken(key)}
+                                    className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${
+                                        selectedToken === key 
+                                            ? 'shadow-[3px_3px_0px_0px_rgba(var(--ink-rgb),1)]' 
+                                            : 'hover:bg-white/50'
+                                    }`}
+                                    style={{
+                                        background: selectedToken === key ? 'hsl(var(--card))' : 'transparent',
+                                        borderWidth: selectedToken === key ? '2px' : '0',
+                                        borderColor: 'var(--border-strong)',
+                                        color: selectedToken === key ? 'hsl(var(--foreground))' : 'var(--text-secondary)',
+                                    }}
+                                >
+                                    <div className="w-3 h-3 rounded-full border-2" style={{ background: color, borderColor: 'var(--border-strong)' }} />
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                
+                <div className="flex items-center justify-end gap-4 mb-4">
+                    {chartType !== 'candlestick' ? (
+                        <>
+                            {[['mUSDC', '#22c55e'], ['mYLD', '#f59e0b'], ['mRWA', '#6366f1']].map(([k, c]) => (
+                                <div key={k} className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 rounded-full" style={{ background: c, borderColor: 'var(--border-strong)' }} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>{k}</span>
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        <>
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-0.5 rounded" style={{ background: '#ffffff', opacity: 0.5 }} />
+                                <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>SMA20</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-0.5 rounded" style={{ 
+                                    background: selectedToken === 'mUSDC' ? '#22c55e' : selectedToken === 'mYLD' ? '#f59e0b' : '#6366f1', 
+                                    opacity: 0.95 
+                                }} />
+                                <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>SMA7</span>
+                            </div>
+                        </>
+                    )}
+                </div>
+                
+                <PriceChart sets={chartSets} crashed={crashed} chartType={chartType} candleData={candleData} selectedToken={selectedToken} />
             </Card>
 
             {/* ── Two-column layout: Crash Panel + Story ── */}
@@ -425,18 +859,18 @@ export default function MarketPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">Crash Intensity</label>
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-secondary)' }}>Crash Intensity</label>
                             <div className="grid grid-cols-2 gap-3">
                                 {CRASH_OPTS.map(p => (
                                     <button key={p} onClick={() => setIntensity(p)} disabled={crashState !== 'idle'}
-                                        className={`p-4 rounded-2xl border-2 transition-all shadow-[4px_4px_0px_0px_rgba(35,30,25,1)] active:shadow-none active:translate-x-1 active:translate-y-1 ${intensity === p ? '' : ''}`}
+                                        className={`p-4 rounded-2xl border-2 transition-all shadow-[4px_4px_0px_0px_rgba(var(--ink-rgb),0.8)] active:shadow-none active:translate-x-1 active:translate-y-1 ${intensity === p ? '' : ''}`}
                                         style={{
                                             borderColor: 'var(--border-strong)',
-                                            background: intensity === p ? '#ffe8d0' : 'hsl(var(--card))',
-                                            color: 'hsl(var(--foreground))',
+                                            background: intensity === p ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
+                                            color: intensity === p ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
                                         }}>
                                         <p className="font-extrabold text-xl tracking-tighter">−{p}%</p>
-                                        <p className={`text-[10px] font-extrabold uppercase tracking-widest`} style={{ color: intensity === p ? 'hsl(var(--foreground) / 0.6)' : 'var(--text-secondary)' }}>
+                                        <p className="text-[10px] font-extrabold uppercase tracking-widest opacity-70">
                                             {p <= 20 ? 'MILD' : p <= 40 ? 'MOD.' : p <= 60 ? 'SEVERE' : 'CRITICAL'}
                                         </p>
                                     </button>
@@ -446,14 +880,14 @@ export default function MarketPage() {
 
                         {/* Quick preview */}
                         {crashState === 'idle' && hasPosition && debtN > 0 && (
-                            <div className="rounded-2xl p-6 border-2 border-dashed border-black/20 bg-[var(--bg-warm-footer)]/20 space-y-3 font-black uppercase tracking-widest text-[10px]">
+                            <div className="rounded-2xl p-6 border-2 border-dashed space-y-3 font-black uppercase tracking-widest text-[10px]" style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--muted))' }}>
                                 <p className="text-[#ef4444] mb-2 font-black">Projected Impact:</p>
                                 <div className="flex justify-between">
-                                    <span className="text-neutral-500 font-normal">Collateral</span>
+                                    <span style={{ color: 'var(--text-secondary)' }} className="font-normal">Collateral</span>
                                     <span className="text-[#ef4444]">${colN.toFixed(2)} → ${newCol.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-neutral-500 font-normal">Health Factor</span>
+                                    <span style={{ color: 'var(--text-secondary)' }} className="font-normal">Health Factor</span>
                                     <span className={newHF < 100 ? 'text-[#ef4444]' : 'text-amber-600'}>{oldHF === Infinity ? '∞' : oldHF.toFixed(2)} → {newHF === Infinity ? '∞' : newHF.toFixed(2)}</span>
                                 </div>
                             </div>
@@ -464,7 +898,8 @@ export default function MarketPage() {
                         <div className="space-y-4 pt-4">
                             <Button onClick={handleCrash} disabled={crashState !== 'idle'}
                                 size="lg"
-                                className="w-full h-16 font-extrabold uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(35,30,25,1)] bg-[#e65555] hover:bg-[#d44444] border-2 border-black transition-all">
+                                className="w-full h-16 font-extrabold uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(var(--ink-rgb),0.8)] bg-[#e65555] hover:bg-[#d44444] border-2 transition-all"
+                                style={{ borderColor: 'var(--border-strong)' }}>
                                 {crashing ? '⚡ CRASHING…' : crashed ? '🔥 MARKET DOWN' : `🔥 CRASH MARKET −${intensity}%`}
                             </Button>
 
@@ -472,7 +907,8 @@ export default function MarketPage() {
                                 <Button onClick={handleReset} disabled={crashState === 'resetting'}
                                     variant="outline"
                                     size="lg"
-                                    className="w-full h-16 font-black uppercase tracking-widest border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)]">
+                                    className="w-full h-16 font-black uppercase tracking-widest border-2 shadow-[6px_6px_0px_0px_rgba(var(--ink-rgb),0.15)]"
+                                    style={{ borderColor: 'var(--border-strong)' }}>
                                     <RefreshCw className="w-5 h-5 mr-2" /> RECOVERY MODE
                                 </Button>
                             )}
@@ -482,7 +918,7 @@ export default function MarketPage() {
                     {/* Protocol component status */}
                     {(crashing || crashed) && (
                         <Card className="p-8 space-y-6">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2">Protocol Response</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: 'var(--text-secondary)' }}>Protocol Response</p>
                             <ComponentNode name="MockOracle" icon={Database} color="#ef4444" label="DEFIED" status={cmpStatus('MockOracle')} desc="Broadcasting new token prices to all contracts" arrow={false} />
                             <ComponentNode name="CollateralManager" icon={BarChart} color="#f59e0b" label="SYNCING" status={cmpStatus('CollateralManager')} desc="Recomputing collateral values and health factors" arrow={false} />
                             <ComponentNode name="SmartVault" icon={Lock} color="#f59e0b" label="SHIELDED" status={cmpStatus('SmartVault')} desc="Reviewing all active vault positions" arrow={false} />
