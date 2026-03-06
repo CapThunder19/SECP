@@ -3,6 +3,7 @@
 import { useAccount, useChainId } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import {
     useCollateralValue, useDebt, useHealthFactor,
     useLoanMode, useMaxBorrow, useBorrowerScore, useTokenBalance,
@@ -11,7 +12,7 @@ import { getContractsForChain } from '@/config/contracts';
 import {
     Card, Badge, Progress, Stagger, StaggerItem, AnimatedNumber, MotionCard, Button,
 } from '@/components/ui';
-import { Wallet, TrendingUp, Shield, AlertTriangle, Star, Activity, RefreshCw, ArrowRight } from 'lucide-react';
+import { Wallet, TrendingUp, Shield, AlertTriangle, Star, Activity, RefreshCw, ArrowRight, TrendingDown, X } from 'lucide-react';
 import Link from 'next/link';
 
 /* ── Skeleton ──────────────────────────── */
@@ -86,6 +87,104 @@ const MODE_BADGE: Record<string, { variant: 'success' | 'warning' | 'destructive
     Freeze: { variant: 'destructive', label: '🔴 Freeze' },
 };
 
+/* ── Crash Result Interface ──────────────────────────── */
+interface CrashResult {
+    timestamp: number;
+    intensity: number;
+    collateralBefore: number;
+    collateralAfter: number;
+    healthFactorBefore: number;
+    healthFactorAfter: number;
+    tokens: Record<string, number>;
+}
+
+/* ── Crash Result Card ──────────────────────────── */
+function CrashResultCard({ result, onDismiss }: { result: CrashResult; onDismiss: () => void }) {
+    const timeSince = Math.floor((Date.now() - result.timestamp) / 1000 / 60); // minutes ago
+    const timeText = timeSince < 1 ? 'Just now' : timeSince < 60 ? `${timeSince}m ago` : `${Math.floor(timeSince / 60)}h ago`;
+    
+    const colLoss = result.collateralBefore - result.collateralAfter;
+    const colLossPct = result.collateralBefore > 0 ? (colLoss / result.collateralBefore) * 100 : 0;
+    const hfDrop = result.healthFactorBefore - result.healthFactorAfter;
+    
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.4 }}
+        >
+            <Card className="p-6 border-2 shadow-[6px_6px_0px_0px_rgba(239,68,68,0.3)] relative" 
+                style={{ borderColor: '#ef4444', background: 'linear-gradient(to bottom right, hsl(var(--card)), rgba(239,68,68,0.05))' }}>
+                {/* Dismiss button */}
+                <button
+                    onClick={onDismiss}
+                    className="absolute top-4 right-4 w-6 h-6 rounded-full border-2 flex items-center justify-center hover:bg-red-100 transition-colors"
+                    style={{ borderColor: 'var(--border-strong)' }}
+                >
+                    <X className="w-3 h-3" />
+                </button>
+                
+                <div className="flex items-start gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center border-2 shadow-[4px_4px_0px_0px_rgba(var(--ink-rgb),1)]" 
+                        style={{ background: '#ef4444', borderColor: 'var(--border-strong)' }}>
+                        <TrendingDown className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                            <h3 className="text-xl font-black uppercase tracking-tight">Recent Market Crash</h3>
+                            <Badge variant="destructive" className="text-[9px] font-black uppercase">
+                                −{result.intensity}% SIMULATED
+                            </Badge>
+                        </div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
+                            {timeText} • Protocol protection activated
+                        </p>
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="p-4 rounded-xl border-2" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--muted))' }}>
+                        <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>Collateral Impact</p>
+                        <p className="text-2xl font-black text-red-600">${result.collateralAfter.toFixed(2)}</p>
+                        <p className="text-[10px] font-bold mt-1" style={{ color: 'var(--text-secondary)' }}>
+                            −${colLoss.toFixed(2)} ({colLossPct.toFixed(1)}%)
+                        </p>
+                    </div>
+                    
+                    <div className="p-4 rounded-xl border-2" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--muted))' }}>
+                        <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>Health Factor</p>
+                        <p className={`text-2xl font-black ${result.healthFactorAfter < 100 ? 'text-red-600' : result.healthFactorAfter < 150 ? 'text-amber-600' : ''}`}>
+                            {result.healthFactorAfter === Infinity ? '∞' : result.healthFactorAfter.toFixed(0)}
+                        </p>
+                        <p className="text-[10px] font-bold mt-1" style={{ color: 'var(--text-secondary)' }}>
+                            {hfDrop === Infinity ? 'From ∞' : `−${hfDrop.toFixed(0)} from ${result.healthFactorBefore === Infinity ? '∞' : result.healthFactorBefore.toFixed(0)}`}
+                        </p>
+                    </div>
+                </div>
+                
+                <div className="mt-6 p-4 rounded-xl border-2 flex items-start gap-3" 
+                    style={{ borderColor: 'hsl(var(--border) / 0.1)', background: 'rgba(99,102,241,0.05)' }}>
+                    <Shield className="w-5 h-5 flex-shrink-0" style={{ color: '#6366f1' }} />
+                    <div>
+                        <p className="text-xs font-black uppercase tracking-tight mb-1" style={{ color: '#6366f1' }}>
+                            Anti-Liquidation Active
+                        </p>
+                        <p className="text-[10px] font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                            Your vault has been automatically protected. Yield redirected to debt repayment. No liquidation penalty applied.
+                        </p>
+                    </div>
+                </div>
+                
+                <Link href="/market" className="block mt-4">
+                    <Button variant="outline" size="sm" className="w-full font-black text-xs uppercase tracking-widest">
+                        View Market Simulator <ArrowRight className="w-3 h-3 ml-2" />
+                    </Button>
+                </Link>
+            </Card>
+        </motion.div>
+    );
+}
+
 export default function DashboardPage() {
     const { isConnected } = useAccount();
     const chainId = useChainId();
@@ -96,6 +195,32 @@ export default function DashboardPage() {
     const { mode } = useLoanMode();
     const { maxBorrow, isLoading: ml } = useMaxBorrow();
     const { score } = useBorrowerScore();
+
+    // Crash result state
+    const [crashResult, setCrashResult] = useState<CrashResult | null>(null);
+
+    // Load crash result from localStorage
+    useEffect(() => {
+        const stored = localStorage.getItem('lastCrashResult');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                // Only show if less than 1 hour old
+                if (Date.now() - parsed.timestamp < 60 * 60 * 1000) {
+                    setCrashResult(parsed);
+                } else {
+                    localStorage.removeItem('lastCrashResult');
+                }
+            } catch {
+                localStorage.removeItem('lastCrashResult');
+            }
+        }
+    }, []);
+
+    const dismissCrashResult = () => {
+        setCrashResult(null);
+        localStorage.removeItem('lastCrashResult');
+    };
 
     if (!isConnected) {
         return (
@@ -136,6 +261,11 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-12">
+
+            {/* Crash Result Alert */}
+            {crashResult && (
+                <CrashResultCard result={crashResult} onDismiss={dismissCrashResult} />
+            )}
 
             {/* Header */}
             <motion.div

@@ -386,10 +386,11 @@ function PriceChart({
 }) {
     if (chartType === 'candlestick') {
         const tokenConfig = {
-            mUSDC: { color: '#22c55e' },
+            mDOT: { color: '#e91e8c' },
+            mWBTC: { color: '#f7931a' },
             mYLD: { color: '#f59e0b' },
             mRWA: { color: '#6366f1' },
-        }[selectedToken as 'mUSDC' | 'mYLD' | 'mRWA'] || { color: '#22c55e' };
+        }[selectedToken as 'mDOT' | 'mWBTC' | 'mYLD' | 'mRWA'] || { color: '#e91e8c' };
         
         return <CandlestickChart 
             tokenKey={selectedToken} 
@@ -502,7 +503,7 @@ function ComponentNode({ name, label, status, color, desc, icon: Icon, arrow }: 
 
 /* ── Main Page ───────────────────────────────────── */
 const CRASH_OPTS = [20, 40, 60, 80] as const;
-const BASE = { mUSDC: 1.0, mYLD: 1.05, mRWA: 1.5 };
+const BASE = { mDOT: 6.0, mWBTC: 60000.0, mYLD: 1.05, mRWA: 1.5 };
 
 export default function MarketPage() {
     const { isConnected } = useAccount();
@@ -527,18 +528,34 @@ export default function MarketPage() {
     const ORACLE = contracts.mockOracle as `0x${string}`;
 
     /* Oracle reads */
-    const { data: pUD, refetch: rU } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [contracts.mockUSDC as `0x${string}`], query: { refetchInterval: 5000 } });
+    const { data: pDOT, refetch: rDOT } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [contracts.mockDOT as `0x${string}`], query: { refetchInterval: 5000 } });
+    const { data: pWBTC, refetch: rWBTC } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [contracts.mockWBTC as `0x${string}`], query: { refetchInterval: 5000 } });
     const { data: pYD, refetch: rY } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [contracts.mockYield as `0x${string}`], query: { refetchInterval: 5000 } });
     const { data: pRD, refetch: rR } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'getPrice', args: [contracts.mockRWA as `0x${string}`], query: { refetchInterval: 5000 } });
     const { data: volD, refetch: rV } = useReadContract({ address: ORACLE, abi: ORACLE_ABI, functionName: 'marketVolatility', query: { refetchInterval: 5000 } });
 
-    const pU = pUD ? parseFloat(formatEther(pUD as bigint)) : BASE.mUSDC;
+    const pD = pDOT ? parseFloat(formatEther(pDOT as bigint)) : BASE.mDOT;
+    const pW = pWBTC ? parseFloat(formatEther(pWBTC as bigint)) : BASE.mWBTC;
     const pY = pYD ? parseFloat(formatEther(pYD as bigint)) : BASE.mYLD;
     const pR = pRD ? parseFloat(formatEther(pRD as bigint)) : BASE.mRWA;
     const vol = Number(volD ?? 0n);
 
+    // Store crash result
+    const storeCrashResult = useCallback((crashIntensity: number, oldCol: number, newCol: number, oldHF: number, newHF: number) => {
+        const crashResult = {
+            timestamp: Date.now(),
+            intensity: crashIntensity,
+            collateralBefore: oldCol,
+            collateralAfter: newCol,
+            healthFactorBefore: oldHF,
+            healthFactorAfter: newHF,
+            tokens: { mDOT: pD, mWBTC: pW, mYLD: pY, mRWA: pR },
+        };
+        localStorage.setItem('lastCrashResult', JSON.stringify(crashResult));
+    }, [pD, pW, pY, pR]);
+
     /* Chart data */
-    const histBase = useMemo(() => ({ mUSDC: genHistory(BASE.mUSDC, 0), mYLD: genHistory(BASE.mYLD, 3), mRWA: genHistory(BASE.mRWA, 7) }), []);
+    const histBase = useMemo(() => ({ mDOT: genHistory(BASE.mDOT, 0), mWBTC: genHistory(BASE.mWBTC, 2), mYLD: genHistory(BASE.mYLD, 5), mRWA: genHistory(BASE.mRWA, 8) }), []);
     const scale = (h: number[], live: number) => { const l = h[h.length - 1]; return h.map(v => v * (live / l)); };
 
     const chartData = useMemo(() => {
@@ -548,14 +565,15 @@ export default function MarketPage() {
             return live * (1 - e * drop);
         });
         return {
-            mUSDC: [...scale(histBase.mUSDC, pU), ...tail(pU)],
+            mDOT: [...scale(histBase.mDOT, pD), ...tail(pD)],
+            mWBTC: [...scale(histBase.mWBTC, pW), ...tail(pW)],
             mYLD: [...scale(histBase.mYLD, pY), ...tail(pY)],
             mRWA: [...scale(histBase.mRWA, pR), ...tail(pR)],
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [crashProgress, localDrop, pU, pY, pR]);
+    }, [crashProgress, localDrop, pD, pW, pY, pR]);
 
-    const [selectedToken, setSelectedToken] = useState<'mUSDC' | 'mYLD' | 'mRWA'>('mUSDC');
+    const [selectedToken, setSelectedToken] = useState<'mDOT' | 'mWBTC' | 'mYLD' | 'mRWA'>('mDOT');
     
     // Generate candlestick data
     const candleData = useMemo(() => {
@@ -563,14 +581,16 @@ export default function MarketPage() {
         const drop = localDrop / 100;
         
         return {
-            mUSDC: genCandleHistory(pU, 0, candleCount, crashProgress, drop),
-            mYLD: genCandleHistory(pY, 3, candleCount, crashProgress, drop),
-            mRWA: genCandleHistory(pR, 7, candleCount, crashProgress, drop),
+            mDOT: genCandleHistory(pD, 0, candleCount, crashProgress, drop),
+            mWBTC: genCandleHistory(pW, 2, candleCount, crashProgress, drop),
+            mYLD: genCandleHistory(pY, 5, candleCount, crashProgress, drop),
+            mRWA: genCandleHistory(pR, 8, candleCount, crashProgress, drop),
         };
-    }, [pU, pY, pR, crashProgress, localDrop]);
+    }, [pD, pW, pY, pR, crashProgress, localDrop]);
 
     const chartSets = [
-        { key: 'mUSDC', data: chartData.mUSDC, color: '#22c55e' },
+        { key: 'mDOT', data: chartData.mDOT, color: '#e91e8c' },
+        { key: 'mWBTC', data: chartData.mWBTC, color: '#f7931a' },
         { key: 'mYLD', data: chartData.mYLD, color: '#f59e0b' },
         { key: 'mRWA', data: chartData.mRWA, color: '#6366f1' },
     ];
@@ -609,12 +629,25 @@ export default function MarketPage() {
     /* Crash handler */
     const handleCrash = useCallback(async () => {
         if (crashState !== 'idle') return;
+        
+        // Capture before state
+        const colN = parseFloat(colValue);
+        const debtN = parseFloat(debt);
+        const oldHF = debtN > 0 ? colN * 85 / debtN : Infinity;
+        
         setCrashState('crashing');
         setLocalDrop(intensity);
         setCrashProgress(0);
         setActiveStep(-1);
         stepTimers.current.forEach(clearTimeout);
         stepTimers.current = [];
+
+        // Calculate after state
+        const newCol = colN * (1 - intensity / 100);
+        const newHF = debtN > 0 ? newCol * 85 / debtN : Infinity;
+        
+        // Store crash result
+        storeCrashResult(intensity, colN, newCol, oldHF, newHF);
 
         // Animate chart
         let step = 0;
@@ -637,13 +670,13 @@ export default function MarketPage() {
                 const gasPrice = await safeGasPrice(publicClient);
                 const hash = await writeContractAsync({
                     address: ORACLE, abi: ORACLE_ABI, functionName: 'simulateCrash',
-                    args: [[contracts.mockUSDC, contracts.mockYield, contracts.mockRWA].map(a => a as `0x${string}`), BigInt(intensity)],
+                    args: [[contracts.mockDOT, contracts.mockWBTC, contracts.mockYield, contracts.mockRWA].map(a => a as `0x${string}`), BigInt(intensity)],
                     gas: 200_000n, gasPrice,
                 });
                 await publicClient!.waitForTransactionReceipt({ hash, confirmations: 1 });
                 setOnChainOk(true);
                 setTxStatus(`✅ On-chain prices updated (${hash.slice(0, 10)}…)`);
-                rU(); rY(); rR(); rV();
+                rDOT(); rWBTC(); rY(); rR(); rV();
             } catch (err: any) {
                 setOnChainOk(false);
                 const m = err?.message ?? '';
@@ -655,7 +688,7 @@ export default function MarketPage() {
             setOnChainOk(false);
             setTxStatus('🔌 Wallet not connected — visual simulation mode');
         }
-    }, [crashState, intensity, isConnected, publicClient, writeContractAsync, rU, rY, rR, rV]);
+    }, [crashState, intensity, isConnected, publicClient, writeContractAsync, rDOT, rWBTC, rY, rR, rV, colValue, debt, storeCrashResult]);
 
     const handleReset = useCallback(async () => {
         if (crashInterval.current) clearInterval(crashInterval.current);
@@ -666,19 +699,19 @@ export default function MarketPage() {
         if (isConnected && onChainOk) {
             try {
                 const gasPrice = await safeGasPrice(publicClient);
-                for (const [a, p] of [[contracts.mockUSDC, parseEther('1')], [contracts.mockYield, parseEther('1.05')], [contracts.mockRWA, parseEther('1.5')]] as const) {
+                for (const [a, p] of [[contracts.mockDOT, parseEther('6')], [contracts.mockWBTC, parseEther('60000')], [contracts.mockYield, parseEther('1.05')], [contracts.mockRWA, parseEther('1.5')]] as const) {
                     const h = await writeContractAsync({ address: ORACLE, abi: ORACLE_ABI, functionName: 'setPrice', args: [a as `0x${string}`, p], gas: 80_000n, gasPrice });
                     await publicClient!.waitForTransactionReceipt({ hash: h, confirmations: 1 });
                 }
                 const h2 = await writeContractAsync({ address: ORACLE, abi: ORACLE_ABI, functionName: 'setVolatility', args: [20n], gas: 60_000n, gasPrice });
                 await publicClient!.waitForTransactionReceipt({ hash: h2, confirmations: 1 });
-                rU(); rY(); rR(); rV();
+                rDOT(); rWBTC(); rY(); rR(); rV();
             } catch { /* UI reset only */ }
         }
         setOnChainOk(null);
         setCrashState('idle');
         setTxStatus('');
-    }, [isConnected, onChainOk, publicClient, writeContractAsync, rU, rY, rR, rV]);
+    }, [isConnected, onChainOk, publicClient, writeContractAsync, rDOT, rWBTC, rY, rR, rV]);
 
     useEffect(() => () => {
         if (crashInterval.current) clearInterval(crashInterval.current);
@@ -710,9 +743,10 @@ export default function MarketPage() {
             </div>
 
             {/* Price cards + volatility */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                 {[
-                    { sym: 'mUSDC', live: pU, color: '#22c55e' },
+                    { sym: 'mDOT', live: pD, color: '#e91e8c' },
+                    { sym: 'mWBTC', live: pW, color: '#f7931a' },
                     { sym: 'mYLD', live: pY, color: '#f59e0b' },
                     { sym: 'mRWA', live: pR, color: '#6366f1' },
                 ].map(({ sym, live, color }) => {
@@ -787,7 +821,8 @@ export default function MarketPage() {
                         <span className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>Select Token:</span>
                         <div className="flex items-center gap-2 border-2 rounded-xl p-1" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--muted))' }}>
                             {[
-                                { key: 'mUSDC' as const, color: '#22c55e', label: 'mUSDC' },
+                                { key: 'mDOT' as const, color: '#e91e8c', label: 'mDOT' },
+                                { key: 'mWBTC' as const, color: '#f7931a', label: 'mWBTC' },
                                 { key: 'mYLD' as const, color: '#f59e0b', label: 'mYLD' },
                                 { key: 'mRWA' as const, color: '#6366f1', label: 'mRWA' },
                             ].map(({ key, color, label }) => (
@@ -817,7 +852,7 @@ export default function MarketPage() {
                 <div className="flex items-center justify-end gap-4 mb-4">
                     {chartType !== 'candlestick' ? (
                         <>
-                            {[['mUSDC', '#22c55e'], ['mYLD', '#f59e0b'], ['mRWA', '#6366f1']].map(([k, c]) => (
+                            {[['mDOT', '#e91e8c'], ['mWBTC', '#f7931a'], ['mYLD', '#f59e0b'], ['mRWA', '#6366f1']].map(([k, c]) => (
                                 <div key={k} className="flex items-center gap-2">
                                     <div className="w-4 h-4 border-2 rounded-full" style={{ background: c, borderColor: 'var(--border-strong)' }} />
                                     <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>{k}</span>
@@ -832,7 +867,7 @@ export default function MarketPage() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-0.5 rounded" style={{ 
-                                    background: selectedToken === 'mUSDC' ? '#22c55e' : selectedToken === 'mYLD' ? '#f59e0b' : '#6366f1', 
+                                    background: selectedToken === 'mDOT' ? '#e91e8c' : selectedToken === 'mWBTC' ? '#f7931a' : selectedToken === 'mYLD' ? '#f59e0b' : '#6366f1', 
                                     opacity: 0.95 
                                 }} />
                                 <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>SMA7</span>
