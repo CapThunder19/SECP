@@ -20,15 +20,15 @@ dotenv.config();
 
 // Moonbase Alpha deployment addresses
 const ADDRESSES = {
-    mockUSDC: "0x2910009bb55f0f1efc4408f1b794600ac529bcc3",
-    mockYield: "0x90c5f5af3086655d10e3daa70c97e8f605a333c8",
-    mockRWA: "0xc500240db43ef946eb0fed6c2f3c80a2d5195a8e",
-    mockDOT: "0xa0fa71cba7361205b0e0db428ec0c51f8d9937cd",
-    mockWBTC: "0xbed7cf7901215030751c4e5c3ac36e6acc33d51e",
-    mockOracle: "0x2431412258006a6f49b4f3361767427c3cbc3532",
-    smartVault: "0x9ac3a6ba0a9459994aa6c568ae19920138487fca",
-    loanManager: "0xcb29fec76ff9a4e7432b5f725b16aad190a0cc26",
-    collateralManager: "0xfd46da485e35732d802325d31534ba34d0335033",
+    mockUSDC: "0x6487ed309006ce5c94d03f428476b30f9b8b787c",
+    mockYield: "0x7f049d2dec7b1e1d3b6c50998ad7e69e1ecc8220",
+    mockRWA: "0x6398277dd089c4c470e8fca6f2cd6224a18186e1",
+    mockDOT: "0x3b1d6b1c0a067dd74f60a480ec5b6b6bb7cad470",
+    mockWBTC: "0xfde4bc6c775fb0387b1e9b30d9d872bf01d001c5",
+    mockOracle: "0x8236e5c95821cec3cb1d39da443c399e829f8d5b",
+    smartVault: "0x25c7c2d7cae8bf5ca240345e9183f6c9fe5cd2ce",
+    loanManager: "0xb1e33643ade11a0010f5a0e74b4d827c961b56cd",
+    collateralManager: "0xae216ee7f1fe422abf8230b4805fe559e97c035d",
 } as const;
 
 // Minimal ABIs for setup
@@ -105,6 +105,8 @@ async function main() {
         { name: "mUSDC", addr: ADDRESSES.mockUSDC },
         { name: "mYield", addr: ADDRESSES.mockYield },
         { name: "mRWA", addr: ADDRESSES.mockRWA },
+        { name: "mDOT", addr: ADDRESSES.mockDOT },
+        { name: "mWBTC", addr: ADDRESSES.mockWBTC },
     ] as const;
 
     for (const t of tokens) {
@@ -126,6 +128,8 @@ async function main() {
         { name: "mUSDC", addr: ADDRESSES.mockUSDC, price: parseEther("1") },       // $1.00
         { name: "mYield", addr: ADDRESSES.mockYield, price: parseEther("1.05") },  // $1.05
         { name: "mRWA", addr: ADDRESSES.mockRWA, price: parseEther("1.5") },      // $1.50
+        { name: "mDOT", addr: ADDRESSES.mockDOT, price: parseEther("6.0") },
+        { name: "mWBTC", addr: ADDRESSES.mockWBTC, price: parseEther("60000.0") },
     ] as const;
 
     for (const p of priceConfig) {
@@ -149,8 +153,10 @@ async function main() {
     console.log("3️⃣  SETTING COLLATERAL WEIGHTS");
     const weightConfig = [
         { name: "mUSDC", addr: ADDRESSES.mockUSDC, weight: 90n },   // 90% collateral value
-        { name: "mYield", addr: ADDRESSES.mockYield, weight: 80n }, // 80% collateral value
-        { name: "mRWA", addr: ADDRESSES.mockRWA, weight: 100n },    // 100% collateral value
+        { name: "mYield", addr: ADDRESSES.mockYield, weight: 75n }, // 75% collateral value
+        { name: "mRWA", addr: ADDRESSES.mockRWA, weight: 80n },    // 80% collateral value
+        { name: "mDOT", addr: ADDRESSES.mockDOT, weight: 85n },
+        { name: "mWBTC", addr: ADDRESSES.mockWBTC, weight: 90n },
     ] as const;
 
     for (const w of weightConfig) {
