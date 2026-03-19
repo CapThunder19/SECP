@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useReadContract, useWriteContract, usePublicClient, useAccount, useChainId } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
 import { getContractsForChain } from '@/config/contracts';
-import { useCollateralValue, useDebt } from '@/hooks/useProtocolData';
+import { useCollateralValue, useDebt, useTokenBalance } from '@/hooks/useProtocolData';
 import {
     TrendingDown, Activity, Zap, RefreshCw, Shield, AlertTriangle,
     BarChart2, Flame, Check, ChevronRight, Lock, Shuffle, BarChart,
@@ -537,6 +537,12 @@ export default function MarketPage() {
     const pR = pRD ? parseFloat(formatEther(pRD as bigint)) : BASE.mRWA;
     const vol = Number(volD ?? 0n);
 
+    /* Wallet Balances */
+    const { balance: balDOT } = useTokenBalance(contracts.mockDOT as `0x${string}`);
+    const { balance: balWBTC } = useTokenBalance(contracts.mockWBTC as `0x${string}`);
+    const { balance: balYLD } = useTokenBalance(contracts.mockYield as `0x${string}`);
+    const { balance: balRWA } = useTokenBalance(contracts.mockRWA as `0x${string}`);
+
     // Store crash result
     const storeCrashResult = useCallback((crashIntensity: number, oldCol: number, newCol: number, oldHF: number, newHF: number) => {
         const crashResult = {
@@ -753,22 +759,29 @@ export default function MarketPage() {
             {/* Price cards + volatility */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                 {[
-                    { sym: 'mDOT', live: pD, color: '#e91e8c' },
-                    { sym: 'mWBTC', live: pW, color: '#f7931a' },
-                    { sym: 'mYLD', live: pY, color: '#f59e0b' },
-                    { sym: 'mRWA', live: pR, color: '#6366f1' },
-                ].map(({ sym, live, color }) => {
+                    { sym: 'mDOT', live: pD, color: '#e91e8c', balance: balDOT },
+                    { sym: 'mWBTC', live: pW, color: '#f7931a', balance: balWBTC },
+                    { sym: 'mYLD', live: pY, color: '#f59e0b', balance: balYLD },
+                    { sym: 'mRWA', live: pR, color: '#6366f1', balance: balRWA },
+                ].map(({ sym, live, color, balance }) => {
                     const after = live * (1 - drop);
+                    const balNum = parseFloat(balance || '0');
                     return (
                         <Card key={sym} className="p-6 transition-all duration-500"
                             style={crashed ? { borderColor: '#ef4444' } : {}}>
-                            <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>{sym}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>{sym} PRICE</p>
                             <p className={`text-3xl font-black tracking-tighter ${crashed ? 'text-red-500' : ''}`}
                                 style={crashed ? undefined : { color: 'hsl(var(--foreground))' }}>
                                 ${(crashed ? after : live).toFixed(4)}
                             </p>
+                            <div className="mt-3 flex items-center justify-between border-t border-dashed border-black/10 dark:border-white/10 pt-3">
+                                <span className="text-[9px] uppercase font-black text-neutral-400">Your Wallet:</span>
+                                <span className="text-[11px] font-bold" style={{ color: color }}>
+                                    {balNum > 0 ? `${balNum.toFixed(2)} ${sym}` : `0.00 ${sym}`}
+                                </span>
+                            </div>
                             {crashed && (
-                                <Badge variant="destructive" className="mt-3 text-[10px] font-black uppercase">
+                                <Badge variant="destructive" className="mt-2 w-full justify-center text-[10px] font-black uppercase">
                                     −{localDrop}% CRASH
                                 </Badge>
                             )}

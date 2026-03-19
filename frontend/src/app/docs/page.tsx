@@ -1,6 +1,6 @@
 'use client';
 
-import { Droplets, Shield, TrendingDown, Zap, BarChart, ArrowRight, BookOpen, AlertTriangle, Calculator, FileText, Globe, Terminal } from 'lucide-react';
+import { Droplets, Shield, TrendingDown, Zap, BarChart, ArrowRight, BookOpen, AlertTriangle, Calculator, FileText, Globe, Terminal, Activity } from 'lucide-react';
 import { Card, Badge, MotionCard } from '@/components/ui';
 
 export default function DocsPage() {
@@ -30,6 +30,54 @@ export default function DocsPage() {
                         Unlike traditional DeFi protocols (Aave, Compound) that instantaneously auction off your assets at a discount when market prices dip, SECP introduces a resilient <strong>Anti-Liquidation Engine</strong>. We freeze vaults under extreme distress and use native asset yield to predictably pay down the debt without sacrificing user principals.
                     </p>
                 </Card>
+            </section>            {/* User Journey & Protocol Lifecycle */}
+            <section className="space-y-6">
+                <h2 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
+                    <Activity className="w-8 h-8 text-indigo-500" /> Protocol Lifecycle
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Step 1 */}
+                    <Card className="p-8 border-t-4" style={{ borderTopColor: '#3b82f6' }}>
+                        <div className="flex items-center gap-4 mb-4">
+                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 font-black text-sm">1</span>
+                            <h3 className="text-xl font-black uppercase tracking-widest text-blue-500">Deposit & Lend</h3>
+                        </div>
+                        <p className="text-sm font-medium leading-relaxed text-neutral-500">
+                            Users start by locking supported collateral assets (like mDOT, mWBTC, or mRWA) into their personal isolated SECP <strong>Smart Vault</strong>. By keeping their principal actively locked, the underlying collateral can be put to work automatically generating base protocol yields behind the scenes (staking, RWA treasuries, etc).
+                        </p>
+                    </Card>
+
+                    {/* Step 2 */}
+                    <Card className="p-8 border-t-4" style={{ borderTopColor: '#10b981' }}>
+                        <div className="flex items-center gap-4 mb-4">
+                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 font-black text-sm">2</span>
+                            <h3 className="text-xl font-black uppercase tracking-widest text-green-500">Borrowing USDC</h3>
+                        </div>
+                        <p className="text-sm font-medium leading-relaxed text-neutral-500">
+                            Once collateral is securely vaulted, users can borrow up to an actively weighted 75% LTV in USDC directly from the SECP <strong>LoanManager</strong>. As long as the health factor is stable (green), the borrower acts as normal, deploying the USDC liquidity outwards.
+                        </p>
+                    </Card>
+
+                    {/* Step 3 */}
+                    <Card className="p-8 md:col-span-2 border-t-4" style={{ borderTopColor: '#ef4444' }}>
+                        <div className="flex items-center gap-4 mb-4">
+                            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 font-black text-sm">3</span>
+                            <h3 className="text-xl font-black uppercase tracking-widest text-red-500">Market Crash & Yield Shifting</h3>
+                        </div>
+                        <p className="text-sm font-medium leading-relaxed text-neutral-500 mb-4">
+                            When global markets plummet, oracle prices drop, plunging the Smart Vaults into <strong>Freeze Mode</strong>. Traditional platforms instantly liquidate users into the ground by selling off their DOT or WBTC at discount auctions.
+                        </p>
+                        <div className="p-6 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-2 border-dashed border-red-200 dark:border-red-900/50">
+                            <h4 className="font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                                <ArrowRight className="w-5 h-5 text-red-500" /> The Anti-Liquidation Shift
+                            </h4>
+                            <p className="text-[13px] font-bold leading-relaxed text-neutral-500">
+                                Instead of destroying the principal collateral, SECP activates the <strong>YieldManager</strong>. All ongoing native staking rewards, yield distributions, or RWA rebases that the underlying collateral is organically earning are strictly diverted. This intercepted yield is forcibly funneled backwards to gently "pay down" the user&apos;s active debt over time, stabilizing the Health Factor without evaporating the user&apos;s base position. The user loses their daily earnings entirely until the debt is back to safe levels!
+                            </p>
+                        </div>
+                    </Card>
+                </div>
             </section>
 
             {/* Core Formulae section */}

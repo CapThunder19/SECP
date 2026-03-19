@@ -205,6 +205,8 @@ export default function DashboardPage() {
         if (stored) {
             try {
                 const parsed = JSON.parse(stored);
+                if (parsed.healthFactorBefore === null) parsed.healthFactorBefore = Infinity;
+                if (parsed.healthFactorAfter === null) parsed.healthFactorAfter = Infinity;
                 // Only show if less than 1 hour old
                 if (Date.now() - parsed.timestamp < 60 * 60 * 1000) {
                     setCrashResult(parsed);
@@ -252,7 +254,7 @@ export default function DashboardPage() {
     // Use simulated values if crash result exists, otherwise use real contract values
     const colN = crashResult ? crashResult.collateralAfter : parseFloat(collateral);
     const debtN = parseFloat(debt);
-    const maxN = parseFloat(maxBorrow);
+    const maxN = crashResult ? colN * 0.75 : parseFloat(maxBorrow);
     const avail = Math.max(0, maxN - debtN);
     const util = maxN > 0 ? Math.min((debtN / maxN) * 100, 100) : 0;
 
