@@ -249,13 +249,20 @@ export default function DashboardPage() {
         );
     }
 
-    const colN = parseFloat(collateral);
+    // Use simulated values if crash result exists, otherwise use real contract values
+    const colN = crashResult ? crashResult.collateralAfter : parseFloat(collateral);
     const debtN = parseFloat(debt);
     const maxN = parseFloat(maxBorrow);
     const avail = Math.max(0, maxN - debtN);
     const util = maxN > 0 ? Math.min((debtN / maxN) * 100, 100) : 0;
 
-    const hfColor = rawHealthFactor >= 150 ? '#000000' : rawHealthFactor >= 100 ? '#f39c12' : '#e74c3c';
+    // Use simulated health factor if crash result exists
+    const displayHealthFactor = crashResult ? crashResult.healthFactorAfter : rawHealthFactor;
+    const displayHealthFactorStr = crashResult 
+        ? (crashResult.healthFactorAfter === Infinity ? '∞' : crashResult.healthFactorAfter.toFixed(0))
+        : healthFactor;
+
+    const hfColor = displayHealthFactor >= 150 ? '#000000' : displayHealthFactor >= 100 ? '#f39c12' : '#e74c3c';
     const scoreColor = score >= 80 ? '#000000' : score >= 60 ? '#f39c12' : '#e74c3c';
     const modeBadge = MODE_BADGE[mode] ?? MODE_BADGE.Flexible;
 
@@ -280,9 +287,15 @@ export default function DashboardPage() {
                     <p className="font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>Your live position on Moonbase Alpha (Polkadot)</p>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap">
-                    <Badge variant="conf" className="px-6 py-2">
-                        <Activity className="w-3.5 h-3.5 mr-1" /> Live
-                    </Badge>
+                    {crashResult ? (
+                        <Badge variant="destructive" className="px-6 py-2 animate-pulse">
+                            <TrendingDown className="w-3.5 h-3.5 mr-1" /> Simulated Crash
+                        </Badge>
+                    ) : (
+                        <Badge variant="conf" className="px-6 py-2">
+                            <Activity className="w-3.5 h-3.5 mr-1" /> Live
+                        </Badge>
+                    )}
                     <Badge variant={mode === 'Flexible' ? 'success' : mode === 'Conservative' ? 'warning' : 'destructive'} className="px-6 py-2">
                         {modeBadge.label} Mode
                     </Badge>
@@ -291,11 +304,15 @@ export default function DashboardPage() {
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard label="Collateral Value" value={`$${colN.toFixed(4)}`} sub="Risk-adjusted" loading={cl} i={0} />
+                <StatCard label="Collateral Value" value={`$${colN.toFixed(4)}`} 
+                    sub={crashResult ? "Simulated (Post-Crash)" : "Risk-adjusted"} 
+                    loading={cl} i={0} />
                 <StatCard label="Current Debt" value={`$${debtN.toFixed(4)}`} sub="Active USDC loan" loading={dl} i={1}
                     color={debtN > 0 ? '#ef4444' : '#000000'} />
                 <StatCard label="Available to Borrow" value={`$${avail.toFixed(4)}`} sub={`Max $${maxN.toFixed(2)}`} loading={ml} i={2} />
-                <StatCard label="Health Factor" value={healthFactor} sub={isSafe ? 'Safe ✅' : 'At risk ⚠️'} loading={hl} i={3}
+                <StatCard label="Health Factor" value={displayHealthFactorStr} 
+                    sub={crashResult ? "Simulated (Post-Crash)" : (displayHealthFactor >= 150 ? 'Safe ✅' : displayHealthFactor >= 100 ? 'At risk ⚠️' : 'Critical 🔴')} 
+                    loading={hl} i={3}
                     color={hfColor} />
             </div>
 

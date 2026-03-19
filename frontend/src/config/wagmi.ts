@@ -61,7 +61,7 @@ export const moonbaseAlpha = defineChain({
 // Use a valid dummy project ID to avoid 403 errors
 // For production, get a real ID from https://cloud.reown.com/
 const projectId =
-  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'c0a3c0a3c0a3c0a3c0a3c0a3c0a3c0a3';
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'b56e18d47c72ab683b10814fe9495694';
 
 export const config = getDefaultConfig({
   appName: 'SECP Protocol',

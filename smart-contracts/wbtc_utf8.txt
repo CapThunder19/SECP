@@ -1,0 +1,18 @@
+﻿
+[dotenv@17.3.1] injecting env (5) from .env -- tip: ΓÜÖ∩╕Å  load multiple .env files with { path: ['.env.local', '.env'] }
+≡ƒÜÇ Redeploying MockWBTC with 18 decimals...
+
+Deploying with account: 0x50a43891937acAA0596163270576aABE4FfeF6Cc
+Account balance: 99569676721875000
+
+≡ƒôª Deploying MockWBTC...
+   ΓÅ│ Transaction: 0x41303564572b86df83fa28a1ebf202c47045120ef0efda98a63b0e246e2d1deb
+   Γ£à MockWBTC deployed at: 0xd500de8fa3285816fa1684c141d5f822ea6f6cd8
+
+Γ£à Decimals: 18 (should be 18)
+Γ£à Faucet amount: 100000000000000000000 (100 * 1e18)
+
+≡ƒÄë Deployment complete!
+
+≡ƒô¥ Update frontend/src/config/contracts.ts with new address:
+   mockWBTC: "0xd500de8fa3285816fa1684c141d5f822ea6f6cd8",

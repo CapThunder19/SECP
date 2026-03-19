@@ -40,7 +40,7 @@ export const CONTRACTS = {
     mockYield: "0x308dccae804cb81d74bc02ff1ddaf7c6bcfb3fe0",
     mockRWA: "0xdbd06fa5936b2d6ccce8fb269d59b400ff73e6ec",
     mockDOT: "0x375318d88b0fcaf58538cf8e3812640f38a1ff98",
-    mockWBTC: "0xc825fe08d9bbad713bce175c8d4e6fdf20f9e4c0", // Updated with 8 decimals
+    mockWBTC: "0xd500de8fa3285816fa1684c141d5f822ea6f6cd8", // Redeployed 18 decimal WTBC to prevent faucet error
     mockOracle: "0x33f27f3ec5f0e48bdf3aa8d35204e94e742fc585",
     smartVault: "0xddcfe550d0e1fa5cc4ed34dad01741058b98411d",
     loanManager: "0x88482b88501cd20ff3610ff4318d2c00bac0c382",

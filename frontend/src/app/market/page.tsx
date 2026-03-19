@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Badge, MotionCard } from '@/components/ui';
 import Link from 'next/link';
+import { ProtocolFlow } from '@/components/dashboard/ProtocolFlow';
 
 /* ── ABIs ──────────────────────────────────────── */
 const ORACLE_ABI = [
@@ -100,11 +101,8 @@ function smoothCurvePath(points: [number, number][]): string {
     let path = `M ${points[0][0]},${points[0][1]}`;
     
     for (let i = 0; i < points.length - 1; i++) {
-        const curr = points[i];
         const next = points[i + 1];
-        const controlPointDistance = (next[0] - curr[0]) * 0.5;
-        
-        path += ` C ${curr[0] + controlPointDistance},${curr[1]} ${next[0] - controlPointDistance},${next[1]} ${next[0]},${next[1]}`;
+        path += ` L ${next[0]},${next[1]}`;
     }
     
     return path;
@@ -114,8 +112,7 @@ function smooth(pts: [number, number][]): string {
     if (pts.length < 2) return '';
     let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
     for (let i = 0; i < pts.length - 1; i++) {
-        const cx = (pts[i][0] + pts[i + 1][0]) / 2;
-        d += ` C${cx.toFixed(1)},${pts[i][1].toFixed(1)} ${cx.toFixed(1)},${pts[i + 1][1].toFixed(1)} ${pts[i + 1][0].toFixed(1)},${pts[i + 1][1].toFixed(1)}`;
+        d += ` L${pts[i + 1][0].toFixed(1)},${pts[i + 1][1].toFixed(1)}`;
     }
     return d;
 }
@@ -663,30 +660,37 @@ export default function MarketPage() {
             stepTimers.current.push(t);
         });
 
-        // On-chain attempt
+        // On-chain attempt (optional - simulation works regardless)
         if (isConnected) {
-            try {
-                setTxStatus('Submitting to blockchain…');
-                const gasPrice = await safeGasPrice(publicClient);
-                const hash = await writeContractAsync({
-                    address: ORACLE, abi: ORACLE_ABI, functionName: 'simulateCrash',
-                    args: [[contracts.mockDOT, contracts.mockWBTC, contracts.mockYield, contracts.mockRWA].map(a => a as `0x${string}`), BigInt(intensity)],
-                    gas: 200_000n, gasPrice,
-                });
-                await publicClient!.waitForTransactionReceipt({ hash, confirmations: 1 });
-                setOnChainOk(true);
-                setTxStatus(`✅ On-chain prices updated (${hash.slice(0, 10)}…)`);
-                rDOT(); rWBTC(); rY(); rR(); rV();
-            } catch (err: any) {
-                setOnChainOk(false);
-                const m = err?.message ?? '';
-                if (m.includes('not the owner') || m.includes('Ownable')) setTxStatus('ℹ️ Visual demo only — not the protocol owner');
-                else if (m.includes('User rejected') || m.includes('denied')) setTxStatus('ℹ️ Cancelled — showing visual simulation');
-                else setTxStatus('ℹ️ On-chain failed — showing local simulation');
-            }
+            setTxStatus('🎬 Running visual simulation...');
+            // Try on-chain update, but don't block the visualization
+            setTimeout(async () => {
+                try {
+                    const gasPrice = await safeGasPrice(publicClient);
+                    const hash = await writeContractAsync({
+                        address: ORACLE, abi: ORACLE_ABI, functionName: 'simulateCrash',
+                        args: [[contracts.mockDOT, contracts.mockWBTC, contracts.mockYield, contracts.mockRWA].map(a => a as `0x${string}`), BigInt(intensity)],
+                        gas: 200_000n, gasPrice,
+                    });
+                    await publicClient!.waitForTransactionReceipt({ hash, confirmations: 1 });
+                    setOnChainOk(true);
+                    setTxStatus(`✅ On-chain prices updated! (${hash.slice(0, 10)}…)`);
+                    rDOT(); rWBTC(); rY(); rR(); rV();
+                } catch (err: any) {
+                    setOnChainOk(false);
+                    const m = err?.message ?? '';
+                    if (m.includes('not the owner') || m.includes('Ownable') || m.includes('owner')) {
+                        setTxStatus('ℹ️ Visual simulation complete (contract owner only for on-chain updates)');
+                    } else if (m.includes('User rejected') || m.includes('denied')) {
+                        setTxStatus('ℹ️ Visual simulation complete (transaction cancelled)');
+                    } else {
+                        setTxStatus('ℹ️ Visual simulation complete (on-chain update unavailable)');
+                    }
+                }
+            }, 500); // Delay to let simulation start first
         } else {
             setOnChainOk(false);
-            setTxStatus('🔌 Wallet not connected — visual simulation mode');
+            setTxStatus('🎬 Visual simulation mode (wallet not connected)');
         }
     }, [crashState, intensity, isConnected, publicClient, writeContractAsync, rDOT, rWBTC, rY, rR, rV, colValue, debt, storeCrashResult]);
 
@@ -734,12 +738,16 @@ export default function MarketPage() {
                         <TrendingDown className="w-12 h-12 text-[#ef4444]" /> Market
                     </h1>
                     <p className="font-normal mt-1" style={{ color: 'var(--text-secondary)' }}>
-                        Stress-test the SECP Protocol anti-liquidation shields.
+                        Visual simulation tool — Demo works for all users (on-chain updates require contract ownership)
                     </p>
                 </div>
-                <Badge variant="conf" className="px-6 py-2 uppercase font-black tracking-widest flex items-center gap-2">
-                    <Activity className="w-4 h-4" /> Live Simulator
-                </Badge>
+                <div className="flex gap-3 items-center">
+                    <Badge variant="conf" className="px-6 py-2 uppercase font-black tracking-widest flex items-center gap-2">
+                        <Activity className="w-4 h-4" /> {crashed ? 'Crashed' : 'Live'} Simulator
+                    </Badge>
+                    {onChainOk === true && <Badge variant="success" className="px-4 py-2 text-xs">✅ On-Chain</Badge>}
+                    {onChainOk === false && crashed && <Badge variant="outline" className="px-4 py-2 text-xs">🎬 Simulation</Badge>}
+                </div>
             </div>
 
             {/* Price cards + volatility */}
@@ -930,6 +938,16 @@ export default function MarketPage() {
 
                         {txStatus && <p className="text-[10px] font-black uppercase tracking-widest border-2 p-4 rounded-xl" style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>{txStatus}</p>}
 
+                        {/* Simulation Notice */}
+                        {crashState === 'idle' && (
+                            <div className="rounded-xl p-4 border-2 border-dashed" style={{ borderColor: 'hsl(var(--border) / 0.3)', background: 'hsl(var(--muted) / 0.5)' }}>
+                                <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
+                                    💡 This is a visual simulation tool. The crash animation works for all users. 
+                                    {isConnected && ' On-chain price updates require contract ownership.'}
+                                </p>
+                            </div>
+                        )}
+
                         <div className="space-y-4 pt-4">
                             <Button onClick={handleCrash} disabled={crashState !== 'idle'}
                                 size="lg"
@@ -992,6 +1010,18 @@ export default function MarketPage() {
                     ) : (
                         /* Active crash — animated story */
                         <div className="space-y-6">
+                            {/* Visual Protocol Flow Diagram */}
+                            <Card className="p-8 border-2 shadow-[12px_12px_0px_0px_rgba(var(--ink-rgb),1)]" style={{ borderColor: 'var(--border-strong)', background: 'hsl(var(--card))' }}>
+                                <div className="mb-6">
+                                    <h2 className="text-3xl font-black uppercase tracking-tighter mb-2">Live Protocol Visualization</h2>
+                                    <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                                        Watch how SECP automatically protects your position
+                                    </p>
+                                </div>
+                                <ProtocolFlow step={activeStep} isActive={crashState === 'crashing' || crashState === 'crashed'} />
+                            </Card>
+
+                            {/* Step-by-step breakdown */}
                             {STORY_STEPS.map((s, i) => {
                                 const visible = activeStep >= i;
                                 const active = activeStep === i;

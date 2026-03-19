@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Shield, LayoutDashboard, ArrowDownToLine, Landmark, Droplets, Menu, X, TrendingDown, Sun, Moon } from 'lucide-react';
+import { Shield, LayoutDashboard, ArrowDownToLine, Landmark, Droplets, Menu, X, TrendingDown, Sun, Moon, BookOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +14,7 @@ const NAV_LINKS = [
     { href: '/borrow', label: 'Borrow', icon: Landmark },
     { href: '/faucet', label: 'Faucet', icon: Droplets },
     { href: '/market', label: 'Market', icon: TrendingDown },
+    { href: '/docs', label: 'Docs', icon: BookOpen },
 ];
 
 function ThemeToggle() {
@@ -68,7 +69,7 @@ export function Navbar() {
             transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         >
             <div className="container mx-auto px-4 max-w-6xl">
-                <div className="flex items-center justify-between h-20">
+                <div className="flex items-center justify-between h-20 gap-6">
 
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-3">
